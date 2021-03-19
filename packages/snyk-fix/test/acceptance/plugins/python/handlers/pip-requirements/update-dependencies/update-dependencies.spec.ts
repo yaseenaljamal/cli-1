@@ -16,7 +16,7 @@ describe('selectFileForPinning', () => {
     const targetFile = 'with-require/dev.txt';
 
     const testResult = {
-      ...generateTestResult(),
+      ...generateTestResult('pip'),
       remediation: {
         unresolved: [],
         upgrade: {},
@@ -56,7 +56,7 @@ describe('selectFileForPinning', () => {
     const targetFile = 'basic/prod.txt';
 
     const testResult = {
-      ...generateTestResult(),
+      ...generateTestResult('pip'),
       remediation: {
         unresolved: [],
         upgrade: {},
@@ -96,7 +96,7 @@ describe('selectFileForPinning', () => {
     const targetFile = 'app-with-constraints/requirements.txt';
 
     const testResult = {
-      ...generateTestResult(),
+      ...generateTestResult('pip'),
       remediation: {
         unresolved: [],
         upgrade: {},
@@ -150,7 +150,7 @@ describe('fix *req*.txt / *.txt Python projects', () => {
     ];
 
     const testResult = {
-      ...generateTestResult(),
+      ...generateTestResult('pip'),
       remediation: {
         unresolved: [],
         upgrade: {},
@@ -218,7 +218,7 @@ describe('fix *req*.txt / *.txt Python projects', () => {
     filesToDelete = [fixedFilePath];
 
     const testResult = {
-      ...generateTestResult(),
+      ...generateTestResult('pip'),
       remediation: {
         unresolved: [],
         upgrade: {},
@@ -293,7 +293,7 @@ describe('fix *req*.txt / *.txt Python projects', () => {
     filesToDelete = [fixedFilePath];
 
     const testResult = {
-      ...generateTestResult(),
+      ...generateTestResult('pip'),
       remediation: {
         unresolved: [],
         upgrade: {},
@@ -383,7 +383,7 @@ describe('fix *req*.txt / *.txt Python projects', () => {
     filesToDelete = [fixedFilePath];
 
     const testResult = {
-      ...generateTestResult(),
+      ...generateTestResult('pip'),
       remediation: {
         unresolved: [],
         upgrade: {},
@@ -459,7 +459,7 @@ describe('fix *req*.txt / *.txt Python projects', () => {
     filesToDelete = [fixedFilePath];
 
     const testResult = {
-      ...generateTestResult(),
+      ...generateTestResult('pip'),
       remediation: {
         unresolved: [],
         upgrade: {},
@@ -525,7 +525,7 @@ describe('fix *req*.txt / *.txt Python projects', () => {
     filesToDelete = [fixedFilePath];
 
     const testResult = {
-      ...generateTestResult(),
+      ...generateTestResult('pip'),
       remediation: {
         unresolved: [],
         upgrade: {},
@@ -592,7 +592,7 @@ describe('fix *req*.txt / *.txt Python projects', () => {
     filesToDelete = [fixedFilePath];
 
     const testResult = {
-      ...generateTestResult(),
+      ...generateTestResult('pip'),
       remediation: {
         unresolved: [],
         upgrade: {},
@@ -658,7 +658,7 @@ describe('fix *req*.txt / *.txt Python projects', () => {
     filesToDelete = [fixedFilePath];
 
     const testResult = {
-      ...generateTestResult(),
+      ...generateTestResult('pip'),
       remediation: {
         unresolved: [],
         upgrade: {},
@@ -732,7 +732,7 @@ describe('fix *req*.txt / *.txt Python projects', () => {
 
     filesToDelete = [fixedFilePath];
     const testResult = {
-      ...generateTestResult(),
+      ...generateTestResult('pip'),
       remediation: {
         unresolved: [],
         upgrade: {},
@@ -792,7 +792,7 @@ describe('fix *req*.txt / *.txt Python projects', () => {
       pathLib.resolve(workspacesPath, 'pip-app/fixed-base2.txt'),
     ];
     const testResult = {
-      ...generateTestResult(),
+      ...generateTestResult('pip'),
       remediation: {
         unresolved: [],
         upgrade: {},
@@ -866,7 +866,7 @@ describe('fix *req*.txt / *.txt Python projects', () => {
       ),
     ];
     const testResult = {
-      ...generateTestResult(),
+      ...generateTestResult('pip'),
       issues: [
         {
           pkgName: 'django@1.6.1',
@@ -1033,7 +1033,7 @@ describe('fix *req*.txt / *.txt Python projects', () => {
       ),
     ];
     const testResult = {
-      ...generateTestResult(),
+      ...generateTestResult('pip'),
       issues: [
         {
           pkgName: 'django@1.6.1',
@@ -1246,7 +1246,7 @@ describe('fix custom named Python projects with --file & --packageManager parame
     ];
 
     const testResult = {
-      ...generateTestResult(),
+      ...generateTestResult('pip'),
       remediation: {
         unresolved: [],
         upgrade: {},

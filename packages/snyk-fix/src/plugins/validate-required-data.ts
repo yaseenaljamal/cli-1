@@ -1,7 +1,7 @@
-import { MissingRemediationDataError } from '../../../lib/errors/missing-remediation-data';
-import { MissingFileNameError } from '../../../lib/errors/missing-file-name';
-import { NoFixesCouldBeAppliedError } from '../../../lib/errors/no-fixes-applied';
-import { EntityToFix, RemediationChanges, Workspace } from '../../../types';
+import { MissingRemediationDataError } from '../lib/errors/missing-remediation-data';
+import { MissingFileNameError } from '../lib/errors/missing-file-name';
+import { NoFixesCouldBeAppliedError } from '../lib/errors/no-fixes-applied';
+import { EntityToFix, RemediationChanges, Workspace } from '../types';
 
 export function validateRequiredData(
   entity: EntityToFix,

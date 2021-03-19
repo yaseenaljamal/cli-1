@@ -8,7 +8,7 @@ import {
   FixChangesSummary,
   FixOptions,
 } from '../../../../../types';
-import { validateRequiredData } from '../../validate-required-data';
+import { validateRequiredData } from '../../../../validate-required-data';
 import {
   generateFailedChanges,
   generateSuccessfulChanges,

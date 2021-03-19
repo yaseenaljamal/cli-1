@@ -5,7 +5,7 @@ import * as debugLib from 'debug';
 
 import { EntityToFix } from '../../../../../types';
 
-import { validateRequiredData } from '../../validate-required-data';
+import { validateRequiredData } from '../../../../validate-required-data';
 import { standardizePackageName } from '../../../standardize-package-name';
 
 const debug = debugLib('snyk-fix:python:Poetry');

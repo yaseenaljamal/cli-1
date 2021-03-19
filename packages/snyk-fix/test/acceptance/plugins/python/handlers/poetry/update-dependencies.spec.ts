@@ -43,7 +43,7 @@ describe('fix Poetry Python projects', () => {
     const targetFile = 'simple/pyproject.toml';
 
     const testResult = {
-      ...generateTestResult(),
+      ...generateTestResult('poetry'),
       remediation: {
         unresolved: [],
         upgrade: {},
@@ -123,7 +123,7 @@ describe('fix Poetry Python projects', () => {
     const targetFile = 'simple/pyproject.toml';
 
     const testResult = {
-      ...generateTestResult(),
+      ...generateTestResult('poetry'),
       remediation: {
         unresolved: [],
         upgrade: {},
@@ -220,7 +220,7 @@ describe('fix Poetry Python projects', () => {
     const targetFile = 'simple/pyproject.toml';
 
     const testResult = {
-      ...generateTestResult(),
+      ...generateTestResult('poetry'),
       remediation: {
         unresolved: [],
         upgrade: {},
@@ -299,7 +299,7 @@ describe('fix Poetry Python projects', () => {
     const targetFile = 'simple/pyproject.toml';
 
     const testResult = {
-      ...generateTestResult(),
+      ...generateTestResult('poetry'),
       remediation: {
         unresolved: [],
         upgrade: {},
@@ -404,7 +404,7 @@ describe('fix Poetry Python projects', () => {
     const targetFile = 'simple/poetry.lock';
 
     const testResult = {
-      ...generateTestResult(),
+      ...generateTestResult('poetry'),
       remediation: {
         unresolved: [],
         upgrade: {},
@@ -476,7 +476,7 @@ describe('fix Poetry Python projects', () => {
     const targetFile = 'with-dev-deps/pyproject.toml';
 
     const testResult = {
-      ...generateTestResult(),
+      ...generateTestResult('poetry'),
       remediation: {
         unresolved: [],
         upgrade: {},
@@ -578,7 +578,7 @@ describe('fix Poetry Python projects fix sequentially', () => {
     const targetFile = 'simple/pyproject.toml';
 
     const testResult = {
-      ...generateTestResult(),
+      ...generateTestResult('poetry'),
       remediation: {
         unresolved: [],
         upgrade: {},
@@ -672,7 +672,7 @@ describe('fix Poetry Python projects fix sequentially', () => {
     const targetFile = 'simple/pyproject.toml';
 
     const testResult = {
-      ...generateTestResult(),
+      ...generateTestResult('poetry'),
       remediation: {
         unresolved: [],
         upgrade: {},
@@ -779,7 +779,7 @@ describe('fix Poetry Python projects fix sequentially', () => {
     const targetFile = 'simple/pyproject.toml';
 
     const testResult = {
-      ...generateTestResult(),
+      ...generateTestResult('poetry'),
       remediation: {
         unresolved: [],
         upgrade: {},
@@ -866,7 +866,7 @@ describe('fix Poetry Python projects fix sequentially', () => {
     const targetFile = 'simple/pyproject.toml';
 
     const testResult = {
-      ...generateTestResult(),
+      ...generateTestResult('poetry'),
       remediation: {
         unresolved: [],
         upgrade: {},
@@ -977,7 +977,7 @@ describe('fix Poetry Python projects fix sequentially', () => {
     const targetFile = 'simple/poetry.lock';
 
     const testResult = {
-      ...generateTestResult(),
+      ...generateTestResult('poetry'),
       remediation: {
         unresolved: [],
         upgrade: {},
@@ -1050,7 +1050,7 @@ describe('fix Poetry Python projects fix sequentially', () => {
     const targetFile = 'with-dev-deps/pyproject.toml';
 
     const testResult = {
-      ...generateTestResult(),
+      ...generateTestResult('poetry'),
       remediation: {
         unresolved: [],
         upgrade: {},

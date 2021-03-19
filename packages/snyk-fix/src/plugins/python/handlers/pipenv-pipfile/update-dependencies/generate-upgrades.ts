@@ -1,6 +1,6 @@
 import { EntityToFix } from '../../../../../types';
 import { standardizePackageName } from '../../../standardize-package-name';
-import { validateRequiredData } from '../../validate-required-data';
+import { validateRequiredData } from '../../../../validate-required-data';
 
 export function generateUpgrades(entity: EntityToFix): { upgrades: string[] } {
   const { remediation } = validateRequiredData(entity);

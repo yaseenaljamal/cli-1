@@ -16,9 +16,14 @@ import { generateEntityToFix } from '../../../helpers/generate-entity-to-fix';
 
 describe('generateOverallSummary', () => {
   it('has fixed & failed', async () => {
-    const entity = generateEntityToFix(
+    const entityPython = generateEntityToFix(
       'pip',
       'requirements.txt',
+      JSON.stringify({}),
+    );
+    const entityMaven = generateEntityToFix(
+      'maven',
+      'pom.xml',
       JSON.stringify({}),
     );
     const entityFailed = generateEntityToFix(
@@ -30,12 +35,33 @@ describe('generateOverallSummary', () => {
       python: {
         succeeded: [
           {
-            original: entity,
+            original: entityPython,
             changes: [
               {
                 success: true,
                 userMessage: 'Upgraded Django from 1.6.1 to 2.0.1',
                 issueIds: ['vuln-2'],
+              },
+            ],
+          },
+        ],
+        failed: [
+          {
+            original: entityFailed,
+            error: new CustomError('Failed!', ERROR_CODES.MissingFileName),
+          },
+        ],
+        skipped: [],
+      },
+      maven: {
+        succeeded: [
+          {
+            original: entityMaven,
+            changes: [
+              {
+                success: true,
+                userMessage: 'Upgraded inline org.springframework:spring-core from 5.0.5.RELEASE to 5.0.6.RELEASE',
+                issueIds: ['vuln-1'],
               },
             ],
           },

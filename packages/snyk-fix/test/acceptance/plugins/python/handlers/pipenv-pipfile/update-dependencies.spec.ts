@@ -44,7 +44,7 @@ describe('fix Pipfile Python projects', () => {
     const targetFile = 'with-dev-deps/Pipfile';
 
     const testResult = {
-      ...generateTestResult(),
+      ...generateTestResult('pip'),
       remediation: {
         unresolved: [],
         upgrade: {},
@@ -118,7 +118,7 @@ describe('fix Pipfile Python projects', () => {
     // Arrange
     const targetFile = 'with-dev-deps/Pipfile';
     const testResult = {
-      ...generateTestResult(),
+      ...generateTestResult('pip'),
       remediation: {
         unresolved: [],
         upgrade: {},
@@ -217,7 +217,7 @@ describe('fix Pipfile Python projects', () => {
     // Arrange
     const targetFile = 'with-dev-deps/Pipfile';
     const testResult = {
-      ...generateTestResult(),
+      ...generateTestResult('pip'),
       remediation: {
         unresolved: [],
         upgrade: {},
@@ -313,7 +313,7 @@ describe('fix Pipfile Python projects', () => {
     // Arrange
     const targetFile = 'with-django-upgrade/Pipfile';
     const testResult = {
-      ...generateTestResult(),
+      ...generateTestResult('pip'),
       remediation: {
         unresolved: [],
         upgrade: {},
@@ -380,7 +380,7 @@ describe('fix Pipfile Python projects', () => {
     // Arrange
     const targetFile = 'with-django-upgrade/Pipfile';
     const testResult = {
-      ...generateTestResult(),
+      ...generateTestResult('pip'),
       remediation: {
         unresolved: [],
         upgrade: {},
@@ -481,7 +481,7 @@ describe('fix Pipfile Python projects (fix sequentially)', () => {
     const targetFile = 'with-dev-deps/Pipfile';
 
     const testResult = {
-      ...generateTestResult(),
+      ...generateTestResult('pip'),
       remediation: {
         unresolved: [],
         upgrade: {},
@@ -563,7 +563,7 @@ describe('fix Pipfile Python projects (fix sequentially)', () => {
     // Arrange
     const targetFile = 'with-dev-deps/Pipfile';
     const testResult = {
-      ...generateTestResult(),
+      ...generateTestResult('pip'),
       remediation: {
         unresolved: [],
         upgrade: {},
@@ -669,7 +669,7 @@ describe('fix Pipfile Python projects (fix sequentially)', () => {
     // Arrange
     const targetFile = 'with-dev-deps/Pipfile';
     const testResult = {
-      ...generateTestResult(),
+      ...generateTestResult('pip'),
       remediation: {
         unresolved: [],
         upgrade: {},
@@ -772,7 +772,7 @@ describe('fix Pipfile Python projects (fix sequentially)', () => {
     // Arrange
     const targetFile = 'with-django-upgrade/Pipfile';
     const testResult = {
-      ...generateTestResult(),
+      ...generateTestResult('pip'),
       remediation: {
         unresolved: [],
         upgrade: {},
@@ -840,7 +840,7 @@ describe('fix Pipfile Python projects (fix sequentially)', () => {
     // Arrange
     const targetFile = 'with-django-upgrade/Pipfile';
     const testResult = {
-      ...generateTestResult(),
+      ...generateTestResult('pip'),
       remediation: {
         unresolved: [],
         upgrade: {},

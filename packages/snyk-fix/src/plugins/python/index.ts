@@ -4,12 +4,13 @@ import * as ora from 'ora';
 import * as chalk from 'chalk';
 
 import { EntityToFix, FixOptions } from '../../types';
-import { FailedToFix, FixHandlerResultByPlugin } from '../types';
+import { FixHandlerResultByPlugin } from '../types';
 import { loadHandler } from './load-handler';
 import { SUPPORTED_HANDLER_TYPES } from './supported-handler-types';
 import { mapEntitiesPerHandlerType } from './map-entities-per-handler-type';
-import { partitionByFixable } from './handlers/is-supported';
+import { partitionByFixable } from '../is-supported';
 import { CustomError } from '../../lib/errors/custom-error';
+import { generateFailed } from '../generate-failed';
 
 const debug = debugLib('snyk-fix:python');
 
@@ -82,15 +83,4 @@ export async function pythonFix(
     },
   );
   return handlerResult;
-}
-
-function generateFailed(
-  projectsToFix: EntityToFix[],
-  error: CustomError,
-): FailedToFix[] {
-  const failed: FailedToFix[] = [];
-  for (const project of projectsToFix) {
-    failed.push({ original: project, error: error });
-  }
-  return failed;
 }

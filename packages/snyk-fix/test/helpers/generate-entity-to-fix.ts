@@ -10,6 +10,7 @@ import {
   TestResult,
   FixInfo,
   SEVERITY,
+  RemediationChanges,
 } from '../../src/types';
 
 export function generateEntityToFix(
@@ -21,7 +22,7 @@ export function generateEntityToFix(
 ): EntityToFix {
   const scanResult = generateScanResult(type, targetFile);
   const testResult = withVulns
-    ? generateTestResult()
+    ? generateTestResult(type)
     : {
         issues: [],
         issuesData: {},
@@ -41,12 +42,13 @@ export function generateEntityToFixWithFileReadWrite(
   options: {
     command?: string;
     dev?: boolean;
-    packageManager?: string;
+    type: string;
   } = {
     command: 'python3',
+    type: 'pip',
   },
 ): EntityToFix {
-  const scanResult = generateScanResult('pip', targetFile);
+  const scanResult = generateScanResult(options.type, targetFile);
 
   const workspace = {
     path: workspacesPath,
@@ -95,7 +97,7 @@ export function generateScanResult(
   };
 }
 
-export function generateTestResult(): TestResult {
+export function generateTestResult(type: string): TestResult {
   const issueId = 'VULN_ID_1';
   return {
     issues: [
@@ -113,7 +115,15 @@ export function generateTestResult(): TestResult {
       },
     },
     depGraphData: ('' as unknown) as DepGraphData,
-    remediation: {
+    remediation: remediationByEcosystem(type),
+  };
+}
+
+function remediationByEcosystem(type: string): RemediationChanges {
+  const pythonEcosystem = ['pip', 'poetry'];
+
+  if (pythonEcosystem.includes(type)) {
+    return {
       unresolved: [],
       upgrade: {},
       patch: {},
@@ -125,6 +135,21 @@ export function generateTestResult(): TestResult {
           isTransitive: false,
         },
       },
-    },
-  };
+    };
+  } else if (type === 'maven') {
+    return {
+      unresolved: [],
+      upgrade: {
+        'org.springframework:spring-core@5.0.5.RELEASE': {
+          upgradeTo: 'org.springframework:spring-core@5.0.6.RELEASE',
+          vulns: ['SNYK-JAVA-ORGSPRINGFRAMEWORK-31651'],
+          upgrades: ['org.springframework:spring-core'],
+        },
+      },
+      patch: {},
+      ignore: {},
+      pin: {},
+    };
+  }
+  return { unresolved: [], upgrade: {}, patch: {}, ignore: {}, pin: {} };
 }

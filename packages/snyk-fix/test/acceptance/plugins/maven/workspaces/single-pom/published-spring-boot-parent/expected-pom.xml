@@ -1,0 +1,22 @@
+<project>
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>org.example</groupId>
+    <artifactId>myapp</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+	<parent>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-parent</artifactId>
+		 <!-- FUTURE PREFFERED FIX OPTION IS HERE: 2.3.0.RELEASE -->
+		<version>2.2.1.RELEASE</version>
+		<relativePath/> <!-- lookup parent from repository -->
+	</parent>
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-core</artifactId>
+            <!-- FIX OPTION 2 HERE (CURRENTLY SUPPORTED): 5.2.19.RELEASE -->
+            <!-- INLINE OVERRIDE INSTEAD OF WHOLE FRAMEWORK UPGRADE -->
+            <version>5.2.19.RELEASE</version>
+        </dependency>
+    </dependencies>
+</project>
