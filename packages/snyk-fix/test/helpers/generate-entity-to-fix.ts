@@ -41,12 +41,13 @@ export function generateEntityToFixWithFileReadWrite(
   options: {
     command?: string;
     dev?: boolean;
-    packageManager?: string;
+    type: string;
   } = {
     command: 'python3',
+    type: 'pip'
   },
 ): EntityToFix {
-  const scanResult = generateScanResult('pip', targetFile);
+  const scanResult = generateScanResult(options.type, targetFile);
 
   const workspace = {
     path: workspacesPath,
