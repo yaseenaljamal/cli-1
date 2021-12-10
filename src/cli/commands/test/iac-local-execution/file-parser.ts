@@ -28,7 +28,7 @@ export async function parseFiles(
   const failedFiles: IacFileParseFailure[] = [];
   for (const fileData of filesData) {
     try {
-      parsedFiles.push(...tryParseIacFile(fileData, options));
+      parsedFiles.push(...await tryParseIacFile(fileData, options));
     } catch (err) {
       if (filesData.length === 1) {
         throw err;
@@ -62,10 +62,10 @@ function generateFailedParsedFile(
   };
 }
 
-export function tryParseIacFile(
+export async function tryParseIacFile(
   fileData: IacFileData,
   options: IaCTestFlags = {},
-): IacFileParsed[] {
+): Promise<IacFileParsed[]> {
   analytics.add('iac-terraform-plan', false);
   switch (fileData.fileType) {
     case 'yaml':
@@ -87,7 +87,7 @@ export function tryParseIacFile(
       }
     }
     case 'tf':
-      return tryParsingTerraformFile(fileData);
+      return await tryParsingTerraformFile(fileData);
     default:
       throw new UnsupportedFileTypeError(fileData.fileType);
   }

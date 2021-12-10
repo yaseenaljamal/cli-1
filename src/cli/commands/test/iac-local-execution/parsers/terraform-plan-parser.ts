@@ -106,6 +106,7 @@ export function tryParsingTerraformPlan(
       {
         ...terraformPlanFile,
         jsonContent: extractResourcesForScan(terraformPlanJson, isFullScan),
+        content: '',
         engineType: EngineType.Terraform,
         projectType: IacProjectType.TERRAFORM,
       },

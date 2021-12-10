@@ -17,6 +17,7 @@ export function detectConfigType(
         return {
           ...fileData,
           jsonContent: parsedFile,
+          content: '',
           projectType: IacProjectType.CLOUDFORMATION,
           engineType: EngineType.CloudFormation,
           docId: fileData.fileType === 'json' ? undefined : docId,
@@ -25,6 +26,7 @@ export function detectConfigType(
         return {
           ...fileData,
           jsonContent: parsedFile,
+          content: '',
           projectType: IacProjectType.K8S,
           engineType: EngineType.Kubernetes,
           docId: fileData.fileType === 'json' ? undefined : docId,
@@ -33,6 +35,7 @@ export function detectConfigType(
         return {
           ...fileData,
           jsonContent: parsedFile,
+          content: '',
           projectType: IacProjectType.ARM,
           engineType: EngineType.ARM,
         };

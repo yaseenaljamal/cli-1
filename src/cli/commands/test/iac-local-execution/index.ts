@@ -118,7 +118,7 @@ export async function test(
       scannedFiles,
       iacOrgSettings.customPolicies,
     );
-    const formattedResults = formatScanResults(
+    const formattedResults = await formatScanResults(
       resultsWithCustomSeverities,
       options,
       iacOrgSettings.meta,

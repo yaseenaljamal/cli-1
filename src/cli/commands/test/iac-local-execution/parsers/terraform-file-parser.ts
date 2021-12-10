@@ -9,14 +9,20 @@ import { CustomError } from '../../../../../lib/errors';
 import { getErrorStringCode } from '../error-utils';
 import { IacProjectType } from '../../../../../lib/iac/constants';
 
-export function tryParsingTerraformFile(
+const { newHCL2JSONParser } = require('./hcl2json');
+
+export async function tryParsingTerraformFile(
   fileData: IacFileData,
-): Array<IacFileParsed> {
+): Promise<Array<IacFileParsed>> {
   try {
+    const hcl2JSONParser = newHCL2JSONParser(fileData.fileContent, "");
+    const jsonContent = await hcl2JSONParser.parse()
+    console.log('jsonContent', jsonContent)
     return [
       {
         ...fileData,
-        jsonContent: hclToJson(fileData.fileContent),
+        jsonContent: JSON.parse(jsonContent),
+        content: fileData.fileContent,
         projectType: IacProjectType.TERRAFORM,
         engineType: EngineType.Terraform,
       },

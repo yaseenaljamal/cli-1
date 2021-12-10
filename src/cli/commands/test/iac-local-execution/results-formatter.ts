@@ -11,25 +11,26 @@ import * as path from 'path';
 import { SEVERITY, SEVERITIES } from '../../../../lib/snyk-test/common';
 import { IacProjectType } from '../../../../lib/iac/constants';
 import { CustomError } from '../../../../lib/errors';
-import { extractLineNumber, getFileTypeForParser } from './extract-line-number';
+// import { extractLineNumber, getFileTypeForParser } from './extract-line-number';
 import { getErrorStringCode } from './error-utils';
 import { isLocalFolder } from '../../../../lib/detect';
 import {
-  MapsDocIdToTree,
-  getTrees,
+  // MapsDocIdToTree,
+  // getTrees,
   parsePath,
 } from '@snyk/cloud-config-parser';
 
 const severitiesArray = SEVERITIES.map((s) => s.verboseName);
 
-export function formatScanResults(
+export async function formatScanResults(
   scanResults: IacFileScanResult[],
   options: IaCTestFlags,
   meta: TestMeta,
-): FormattedResult[] {
+): Promise<FormattedResult[]> {
   try {
-    const groupedByFile = scanResults.reduce((memo, scanResult) => {
-      const res = formatScanResult(scanResult, meta, options);
+    const groupedByFile = await scanResults.reduce(async (memoPromise, scanResult) => {
+      const memo = await memoPromise;
+      const res = await formatScanResult(scanResult, meta, options);
       if (memo[scanResult.filePath]) {
         memo[scanResult.filePath].result.cloudConfigResults.push(
           ...res.result.cloudConfigResults,
@@ -38,7 +39,7 @@ export function formatScanResults(
         memo[scanResult.filePath] = res;
       }
       return memo;
-    }, {} as { [key: string]: FormattedResult });
+    }, Promise.resolve({} as { [key: string]: FormattedResult }));
     return Object.values(groupedByFile);
   } catch (e) {
     throw new FailedToFormatResults();
@@ -53,31 +54,23 @@ const engineTypeToProjectType = {
   [EngineType.Custom]: IacProjectType.CUSTOM,
 };
 
-function formatScanResult(
+const { newHCL2JSONParser } = require('./parsers/hcl2json');
+
+async function formatScanResult(
   scanResult: IacFileScanResult,
   meta: TestMeta,
   options: IaCTestFlags,
-): FormattedResult {
-  const fileType = getFileTypeForParser(scanResult.fileType);
+): Promise<FormattedResult> {
   const isGeneratedByCustomRule = scanResult.engineType === EngineType.Custom;
-  let treeByDocId: MapsDocIdToTree;
-  try {
-    treeByDocId = getTrees(fileType, scanResult.fileContent);
-  } catch (err) {
-    // we do nothing intentionally.
-    // Even if the building of the tree fails in the external parser,
-    // we still pass an undefined tree and not calculated line number for those
-  }
 
-  const formattedIssues = scanResult.violatedPolicies.map((policy) => {
+  const formattedIssues = await Promise.all(scanResult.violatedPolicies.map(async (policy) => {
     const cloudConfigPath =
       scanResult.docId !== undefined
         ? [`[DocId: ${scanResult.docId}]`].concat(parsePath(policy.msg))
         : policy.msg.split('.');
 
-    const lineNumber: number = treeByDocId
-      ? extractLineNumber(cloudConfigPath, fileType, treeByDocId)
-      : -1;
+    const hcl2JSONParser = newHCL2JSONParser(scanResult.content, policy.msg);
+    const lineNumber = await hcl2JSONParser.lineNumber();
 
     return {
       ...policy,
@@ -97,7 +90,7 @@ function formatScanResult(
         : undefined,
       isGeneratedByCustomRule,
     };
-  });
+  }));
 
   const { targetFilePath, projectName, targetFile } = computePaths(
     scanResult.filePath,

@@ -94,6 +94,7 @@ class PolicyEngine {
       return {
         ...iacFile,
         violatedPolicies,
+        fileContent: iacFile.content,
       };
     } catch (err) {
       // TODO: to distinguish between different failure reasons

@@ -19,6 +19,7 @@ export const VALID_FILE_TYPES = ['tf', 'json', 'yaml', 'yml'];
 
 export interface IacFileParsed extends IacFileData {
   jsonContent: Record<string, unknown> | TerraformScanInput;
+  content: string;
   projectType: IacProjectType;
   engineType: EngineType;
   docId?: number;
@@ -42,6 +43,7 @@ export type ParsingResults = {
 };
 
 export interface IacFileScanResult extends IacFileParsed {
+  fileContent: string;
   violatedPolicies: PolicyMetadata[];
 }
 
