@@ -45,13 +45,7 @@ export default async function log4shell(...args: MethodArgs): Promise<void> {
 
   for (const path of paths) {
     const content = await readFile(path);
-    if (isJavaArchive(path)) {
-      try {
-        await handleJar(content, path, signatures);
-      } catch (error) {
-        errors.push(error);
-      }
-    }
+    await handleContent(path, content, path, signatures);
   }
 
   spinner.stop();
@@ -80,51 +74,44 @@ export default async function log4shell(...args: MethodArgs): Promise<void> {
   console.log('No known vulnerable version of log4j was detected');
 }
 
-async function handleJar(
+async function handleContent(
+  name: string,
   content: FileContent,
   path: string,
   accumulator: Array<Signature>,
 ): Promise<void> {
-  const hash = await computeDigest(content);
+  if (name.endsWith('.java') || name.endsWith('.class')) {
+    const hash = await computeDigest(content);
 
-  if (vulnerableHashes.includes(hash)) {
-    accumulator.push({
-      hash,
-      path,
-    });
+    if (vulnerableHashes.includes(hash)) {
+      accumulator.push({ hash, path });
+      return;
+    }
+  }
+
+  if (!isJavaArchive(path)) {
     return;
   }
-  const zip = new AdmZip(content);
-  const entries = zip.getEntries();
 
-  for (const entry of entries) {
-    if (entry.isDirectory) {
-      continue;
-    }
+  try {
+    const zip = new AdmZip(content);
+    const entries = zip.getEntries();
 
-    if (isJavaArchive(entry.entryName)) {
-      try {
-        await handleJar(
-          entry.getData(),
-          path + '/' + entry.entryName,
-          accumulator,
-        );
-      } catch (error) {
-        errors.push(error);
+    for (const entry of entries) {
+      if (entry.isDirectory) {
+        continue;
       }
-    }
 
-    if (/^[^.]+.java|.class$/.test(entry.entryName)) {
-      const content: FileContent = entry.getData();
-      const hash = await computeDigest(content);
-
-      if (vulnerableHashes.includes(hash)) {
-        accumulator.push({
-          hash,
-          path: path + '/' + entry.entryName,
-        });
-      }
+      await handleContent(
+        entry.entryName,
+        entry.getData(),
+        path + '/' + entry.entryName,
+        accumulator,
+      );
     }
+  } catch (error) {
+    errors.push(error);
+    return;
   }
 }
 
