@@ -42,10 +42,8 @@ export default async function log4shell(...args: MethodArgs): Promise<void> {
   const paths: Path[] = await find('.');
   const spinner = await startSpinner();
 
-  for (const path of paths) {
-    const content = await readFile(path);
-    await handleContent(content, path, signatures);
-  }
+  const entries = EntriesFromPaths(paths);
+  await handleEntries(entries, signatures);
 
   spinner.stop();
 
@@ -73,44 +71,61 @@ export default async function log4shell(...args: MethodArgs): Promise<void> {
   console.log('No known vulnerable version of log4j was detected');
 }
 
-async function handleContent(
-  content: FileContent,
-  path: string,
-  accumulator: Array<Signature>,
-): Promise<void> {
-  if (isJvmFile(path) || isJavaArchive(path)) {
-    const hash = await computeDigest(content);
+interface Entry {
+  getData: () => Promise<Buffer>;
+  getPath: () => Promise<string>;
+}
 
-    if (vulnerableHashes.includes(hash)) {
-      accumulator.push({
-        hash,
-        path,
-      });
-      return;
-    }
-  }
+function EntriesFromPaths(paths: string[]): Entry[] {
+  const entries: Entry[] = paths.map((path) => {
+    return {
+      getData: async () => await readFile(path),
+      getPath: async () => path,
+    };
+  })
 
-  if (!isJavaArchive(path)) {
-    return;
-  }
+  return entries
+}
 
-  try {
-    const zip = new AdmZip(content);
-    const entries = zip.getEntries();
+function EntriesFromZipEntries(parent: string, entries: any[]): Entry[] {
+  return entries.map((entry) => {
+    return {
+      getData: async () => entry.getData(),
+      getPath: async () => parent + '/' + entry.entryName,
+    };
+  })
+}
 
-    for (const entry of entries) {
-      if (entry.isDirectory) {
+async function handleEntries(entries: Entry[], accumulator: Array<Signature>): Promise<void> {
+  for(const entry of entries) {
+    const path = await entry.getPath();
+    const content = await entry.getData();
+
+    if (isJvmFile(path) || isJavaArchive(path)) {
+      const hash = await computeDigest(content);
+
+      if (vulnerableHashes.includes(hash)) {
+        accumulator.push({
+          hash,
+          path,
+        });
         continue;
       }
-
-      await handleContent(
-        entry.getData(),
-        path + '/' + entry.entryName,
-        accumulator,
-      );
     }
-  } catch (error) {
-    errors.push(error);
+
+    if (!isJavaArchive(path)) {
+      continue;
+    }
+
+    try {
+      const zip = new AdmZip(content);
+      const files = zip.getEntries().filter((e) => !e.isDirectory)
+      const entries = EntriesFromZipEntries(path, files);
+
+      await handleEntries(entries, accumulator);
+    } catch (error) {
+      errors.push(error);
+    }
   }
 }
 
