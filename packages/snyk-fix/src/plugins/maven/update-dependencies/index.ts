@@ -1,9 +1,6 @@
 import * as debugLib from 'debug';
-import {
-  parse,
-  j2xParser as Parser,
-  X2jOptionsOptional,
-} from 'fast-xml-parser';
+import * as poke from 'xmlpoke';
+import { XMLParser, X2jOptionsOptional,  XMLBuilder} from 'fast-xml-parser';
 
 import { validateRequiredData } from '../../python/handlers/validate-required-data';
 import {
@@ -39,16 +36,17 @@ export async function updateDependencies(
     debug(`pomXml=${pomXml}`);
     // parse it
     const parseOptions: X2jOptionsOptional = {
+      // To allow attributes without value.
+      // By default boolean attributes are ignored
+      allowBooleanAttributes: true,
       // trim string values of an attribute or node
       trimValues: true,
-      // do not parse the value of text node to float, integer, or boolean
-      // we parse to strings primarily so versions are not parsed as numbers
-      parseNodeValue: false,
       // ignore attributes to be parsed
-      ignoreAttributes: true,
+      // ignoreAttributes: true,
+      alwaysCreateTextNode: true
     };
-
-    const pomJson = parse(pomXml, parseOptions);
+    const parser = new XMLParser({});
+    const pomJson = parser.parse(pomXml, parseOptions);
     debug(`pomJson=${JSON.stringify(pomJson)}`);
 
     for (const [upgradeFrom, upgradeData] of Object.entries(
@@ -58,6 +56,7 @@ export async function updateDependencies(
 
       const { changes } = await applyUpgrade(
         pomJson,
+        pomXml,
         upgradeFrom,
         upgradeData,
         workspace,
@@ -105,6 +104,7 @@ function ensureArray<T>(value?: T | T[]): T[] {
 
 async function applyUpgrade(
   pomJson: any,
+  pomXml: string,
   upgradeFrom: string,
   upgradeData: UpgradeRemediation,
   workspace: Workspace,
@@ -117,39 +117,31 @@ async function applyUpgrade(
 
   try {
     let foundDependency = false;
+    let newFileContents;
     // only apply upgrades to version inline, ignore everything else
-    const dependencies = ensureArray(pomJson?.project?.dependencies?.dependency);
-    debug(`dependencies=${dependencies}`, JSON.stringify(pomJson.dependencies))
+    const dependencies = ensureArray(
+      pomJson?.project?.dependencies?.dependency,
+    );
+    debug(`dependencies=${JSON.stringify(dependencies)}`);
     for (const dependency of dependencies) {
-      debug(`${pkgName} does this equal ${dependency?.groupId}:${dependency?.artifactId}`);
-      if (pkgName === `${dependency?.groupId}:${dependency?.artifactId}`) {
-        dependency.version = newVersion;
+      debug(
+        `${pkgName} does this equal ${dependency?.groupId}:${dependency?.artifactId}`,
+      );
+        debug('applyPropertyUpgrade', {newFileContents})
+
+        newFileContents = applyDependencyUpgrade(pomXml, newVersion, dependency.groupId, dependency.artifactId)
+        if (pkgName === `${dependency?.groupId}:${dependency?.artifactId}`) {
+        // dependency.version = newVersion;
         foundDependency = true;
         break;
       }
     }
     debug(`foundDependency ${pkgName} = ${foundDependency}`);
 
-    if (!foundDependency) {
+    if (!foundDependency || !newFileContents) {
       throw new Error('Could not find dependency ' + upgradeFrom);
     }
 
-    // write file back
-    const defaultOptions = {
-      // attributeNamePrefix : "@_",
-      // attrNodeName: "@", //default is false
-      // textNodeName : "#text",
-      // ignoreAttributes : true,
-      // cdataTagName: "__cdata", //default is false
-      // cdataPositionChar: "\\c",
-      // format: true,
-      // indentBy: "  ",
-      // supressEmptyNode: false,
-      // tagValueProcessor: a=> he.encode(a, { useNamedReferences: true}),// default is a=>a
-      // attrValueProcessor: a=> he.encode(a, {isAttributeValue: isAttribute, useNamedReferences: true})// default is a=>a
-    };
-    const parser = new Parser(defaultOptions);
-    const newFileContents = parser.parse(pomJson);
     await workspace.writeFile(targetFile, newFileContents);
     changes.push({
       success: true,
@@ -168,4 +160,39 @@ async function applyUpgrade(
     });
   }
   return { changes };
+}
+
+
+function applyDependencyUpgrade(
+  pomXml: string,
+  upgradedVersion: string,
+  groupId: string,
+  artifactId: string,
+) {
+  const { simpleXML, restore } = simplifyXml(pomXml);
+  try {
+    const fixedXML = poke(simpleXML, (xml) => {
+      const selector = `groupId="${groupId}" and artifactId="${artifactId}"`;
+      xml.errorOnNoMatches();
+      xml.set(`//dependency[${selector}]/version`, upgradedVersion);
+    });
+    return restore(fixedXML);
+  } catch {
+    throw new Error('Failed to apply dependency upgrade');
+  }
+}
+
+function simplifyXml(pomXml: string) {
+  const SIMPLE_PROJECT = '<project>';
+  const PROJECT_TAG_RE = /(<project[\s\S]*?>)/;
+  // XML namespaces are a pain! Let's side-step that!
+  // besides: xmlpoke reformats them, and we don't want that!
+  const projectTag = pomXml.match(PROJECT_TAG_RE)![1];
+  const simpleXML = pomXml.replace(projectTag, SIMPLE_PROJECT);
+  const restore = (xml: string) => xml.replace(SIMPLE_PROJECT, projectTag);
+
+  return {
+    simpleXML,
+    restore,
+  };
 }

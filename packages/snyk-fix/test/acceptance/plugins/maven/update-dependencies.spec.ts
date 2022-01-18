@@ -13,7 +13,7 @@ describe('fix pom.xml projects', () => {
   });
   const workspacesPath = pathLib.resolve(__dirname, 'workspaces');
 
-  it('fixes a simple project by upgrading inline', async () => {
+  it.only('fixes a simple project by upgrading inline', async () => {
     // Arrange
     const targetFile = 'simple-app/pom.xml';
     filesToDelete = [pathLib.join(workspacesPath, 'simple-app/fixed-pom.xml')];
