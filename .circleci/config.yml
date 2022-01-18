@@ -176,7 +176,7 @@ jobs:
           node_version: << parameters.node_version >>
       - run:
           name: Linting project
-          command: npm run lint
+          command: make -k lint
   build:
     <<: *defaults
     docker:
@@ -189,7 +189,7 @@ jobs:
           node_version: << parameters.node_version >>
       - run:
           name: Building project
-          command: npm run build:prod
+          command: make build-prod
       - persist_to_workspace:
           root: .
           paths:
@@ -252,19 +252,19 @@ jobs:
           command: node ./bin/snyk config set "api=$env:SNYK_API_KEY"
       - run:
           name: Running packages unit tests
-          command: npm run test:packages-unit -- --ci
+          command: make test-packages-unit
       - run:
           name: Running packages acceptance tests
-          command: npm run test:packages-acceptance -- --ci
+          command: make test-packages-acceptance
       - run:
           name: Running root tests
-          command: npm run test:jest -- --ci
+          command: make test-root
       - run:
           name: Running unit tests
-          command: npm run test:jest-unit -- --ci
+          command: make test-unit
       - run:
           name: Running system tests
-          command: npm run test:jest-system -- --ci
+          command: make test-system
       - run:
           name: Download AWS CLI
           command: |
@@ -274,7 +274,7 @@ jobs:
           shell: powershell.exe
       - run:
           name: Running acceptance tests
-          command: npm run test:jest-acceptance -- --ci
+          command: make test-acceptance
   test-linux:
     <<: *defaults
     docker:
@@ -296,24 +296,24 @@ jobs:
           command: node ./bin/snyk config set "api=${SNYK_API_KEY}"
       - run:
           name: Running packages unit tests
-          command: npm run test:packages-unit -- --ci
+          command: make test-packages-unit
       - run:
           name: Running packages acceptance tests
-          command: npm run test:packages-acceptance -- --ci
+          command: make test-packages-acceptance
       - run:
           name: Running root tests
-          command: npm run test:jest -- --ci
+          command: make test-root
       - run:
           name: Running unit tests
-          command: npm run test:jest-unit -- --ci
+          command: make test-unit
       - run:
           name: Running system tests
-          command: npm run test:jest-system -- --ci
+          command: make test-system
       - aws-cli/install:
           version: 2.2.32
       - run:
           name: Running acceptance tests
-          command: npm run test:jest-acceptance -- --ci
+          command: make test-acceptance
 
   test-tap:
     <<: *defaults
