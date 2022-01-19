@@ -5,6 +5,7 @@ Describe "Snyk Code test command"
   After snyk_logout
 
   Describe "snyk code test"
+    Skip if "skip for node 10" check_if_node10
     run_test_in_subfolder() {
       cd ../fixtures/sast/shallow_sast_webgoat || return
       snyk code test . --org=snyk-cli-smoke-test-with-snykcode

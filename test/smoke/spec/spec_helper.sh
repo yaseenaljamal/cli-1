@@ -68,4 +68,10 @@ spec_helper_configure() {
   snyk() {
     eval "${SNYK_COMMAND:=$ORIGINAL_SNYK_EXECUTABLE}" "$@"
   }
+
+  check_if_node10() {
+    export NODE_VERSION="$(node --version)"
+    if echo "$NODE_VERSION" | grep -Eq '^v10.*'; then echo 1
+    fi
+  }
 }
