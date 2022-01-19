@@ -1,5 +1,5 @@
-import { runCommand } from '../../util/runCommand';
-import { getFixturePath } from '../../util/getFixturePath';
+import { runCommand } from '../../../util/runCommand';
+import { getFixturePath } from '../../../util/getFixturePath';
 
 /**
  * This module cannot be unit tested as it hooks onto the current process where

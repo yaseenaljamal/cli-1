@@ -104,31 +104,15 @@ watch: build-packages clean-build-cli
 	$(WEBPACK) --config webpack.dev.ts --watch
 
 .PHONY: test ## run all tests
-test: test-root test-unit test-system test-acceptance test-packages-unit test-packages-acceptance test-tap
+test: test-unit test-acceptance test-tap
 
-.PHONY: test-root ### run cli tests at root level
-test-root: clean-test | dependencies
-	$(JEST) '/test/[^/]+\.spec\.ts'
-
-.PHONY: test-unit ### run cli unit tests
+.PHONY: test-unit ### run unit tests
 test-unit: clean-test | dependencies
-	$(JEST) '/test/jest/unit/(.+/)*[^/]+\.spec\.ts'
+	$(JEST) --testPathPattern '/test(/jest)?/unit/'
 
-.PHONY: test-system ### run cli system tests
-test-system: clean-test | dependencies
-	$(JEST) '/test/jest/system/(.+/)*[^/]+\.spec\.ts'
-
-.PHONY: test-acceptance ### run cli acceptance tests
+.PHONY: test-acceptance ### run acceptance tests
 test-acceptance: clean-test | dependencies
-	$(JEST) '/test/jest/acceptance/(.+/)*[^/]+\.spec\.ts'
-
-.PHONY: test-packages-unit ### run unit tests in packages
-test-packages-unit: clean-test | dependencies
-	$(JEST) '/packages/.+/test/unit/(.+/)*[^/]+\.spec\.ts'
-
-.PHONY: test-packages-acceptance ### run acceptance tests in packages
-test-packages-acceptance: clean-test | dependencies
-	$(JEST) '/packages/.+/test/acceptance/(.+/)*[^/]+\.spec\.ts'
+	$(JEST) --testPathPattern '/test(/jest)?/acceptance/'
 
 .PHONY: test-tap ### run deprecated cli tap tests
 test-tap: clean-test | dependencies
