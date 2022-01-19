@@ -6,6 +6,7 @@ ifneq ($(MIN_MAKE_VERSION),$(firstword $(sort $(MAKE_VERSION) $(MIN_MAKE_VERSION
 $(error 'GNU Make $(MIN_MAKE_VERSION) or above required.')
 endif
 
+NPM := npm
 NPX := npx
 JEST := $(NPX) jest --runInBand
 WEBPACK := NODE_OPTIONS="--max-old-space-size=8192" $(NPX) webpack
@@ -14,6 +15,17 @@ ESLINT := $(NPX) eslint
 LERNA := $(NPX) lerna
 TAP := NODE_OPTIONS="-r ts-node/register" $(NPX) tap -Rspec --timeout=300
 TSNODE := $(NPX) ts-node
+
+PKG_FLAGS :=
+ifeq (master,$(CIRCLE_BRANCH))
+# disabling compression in PRs to reduce build times	
+PKG_FLAGS += --compress Brotli
+endif
+PKG := $(NPX) pkg . $(PKG_FLAGS)
+
+CLI_BUNDLE_FILE := dist/cli/index.js
+BINARY_DIR := binary-releases
+TMP_DIR := tmp
 
 # First target is default.
 .PHONY: help
@@ -37,7 +49,7 @@ help:
 dependencies: node_modules
 
 node_modules:
-	npm ci
+	$(NPM) ci
 
 .PHONY: format ## format all files
 format:
@@ -82,6 +94,10 @@ build-cli-dev: clean-build-cli | dependencies
 .PHONY: build-cli-prod ### build cli for production
 build-cli-prod: clean-build-cli | dependencies
 	$(WEBPACK) --config webpack.prod.ts
+
+.PHONY: install ## install cli using npm
+install: $(BINARY_DIR)/snyk-node.tgz
+	$(NPM) install -g ./$<
 
 .PHONY: watch ## automatically rebuild when cli sources are changed
 watch: build-packages clean-build-cli
@@ -146,4 +162,63 @@ clean-build-packages:
 
 .PHONY: clean-build-cli ### remove cli build files
 clean-build-cli:
-	@rm -rf dist tsconfig.tsbuildinfo *.tgz binary-releases pysrc
+	@rm -rf dist tsconfig.tsbuildinfo *.tgz pysrc $(BINARY_DIR) $(TMP_DIR)
+
+$(CLI_BUNDLE_FILE):
+	$(MAKE) build-prod
+
+$(BINARY_DIR):
+	mkdir $(BINARY_DIR)
+
+$(TMP_DIR):
+	mkdir $(TMP_DIR)
+
+$(BINARY_DIR)/snyk-alpine: $(CLI_BUNDLE_FILE) | $(BINARY_DIR)
+	$(PKG) -t node14-alpine-x64 -o $@
+	$(MAKE) $@.sha256
+
+$(BINARY_DIR)/snyk-linux: $(CLI_BUNDLE_FILE) | $(BINARY_DIR)
+	$(PKG) -t node14-linux-x64 -o $@
+	$(MAKE) $@.sha256
+
+$(BINARY_DIR)/snyk-macos: $(CLI_BUNDLE_FILE) | $(BINARY_DIR)
+	$(PKG) -t node14-macos-x64 -o $@
+	$(MAKE) $@.sha256
+
+$(TMP_DIR)/snyk-win-unsigned.exe: $(CLI_BUNDLE_FILE) | $(TMP_DIR)
+	$(PKG) -t node14-win-x64 -o $@
+
+$(BINARY_DIR)/snyk-win.exe: $(TMP_DIR)/snyk-win-unsigned.exe cert.pem key.pem | $(BINARY_DIR)
+	osslsigncode sign -h sha512 \
+		-certs cert.pem \
+		-key key.pem \
+		-n "Snyk CLI" \
+		-i "https://snyk.io" \
+		-t "http://timestamp.comodoca.com/authenticode" \
+		-in $< \
+		-out $@
+	$(MAKE) $@.sha256
+
+$(BINARY_DIR)/snyk-for-docker-desktop-darwin-x64.tar.gz: $(CLI_BUNDLE_FILE) | $(BINARY_DIR)
+	./docker-desktop/build.sh darwin x64
+	$(MAKE) $@.sha256
+
+$(BINARY_DIR)/snyk-for-docker-desktop-darwin-arm64.tar.gz: $(CLI_BUNDLE_FILE) | $(BINARY_DIR)
+	./docker-desktop/build.sh darwin arm64
+	$(MAKE) $@.sha256
+
+$(BINARY_DIR)/docker-mac-signed-bundle.tar.gz: dist/cli/index.js | $(BINARY_DIR)
+	./release-scripts/docker-desktop-release.sh
+	$(MAKE) $@.sha256
+
+$(BINARY_DIR)/snyk-node.tgz: $(CLI_BUNDLE_FILE) | $(BINARY_DIR)
+	mv $(shell $(NPM) pack) $@
+
+%.sha256: %
+	cd $(@D); shasum -a 256 $(<F) > $(@F); shasum -a 256 -c $(@F)
+
+cert.pem:
+	@echo "$(SIGNING_CERT)" | base64 --decode > $@
+
+key.pem:
+	@echo "$(SIGNING_KEY)" | base64 --decode > $@
