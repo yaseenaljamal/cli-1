@@ -25,6 +25,9 @@ executors:
     docker:
       - image: cimg/node:<< parameters.node_version >>
     working_directory: /mnt/ramdisk/snyk
+  alpine:
+    docker:
+      - image: node:<< pipeline.parameters.node_version >>-alpine
 
 commands:
   setup_npm:
@@ -102,15 +105,22 @@ commands:
     steps:
       - run:
           name: Installing Python
-          command: |
-            sudo apt update
-            sudo apt install python3 python3-pip python-is-python3
+          command: sudo apt install python3 python3-pip python-is-python3
       - aws-cli/install:
           version: << pipeline.parameters.aws_version >>
-       - restore_cache:
-          name: Restoring SDKMAN install cache
-          keys:
-            - sdkman-install-cache-v3-{{ arch }}-{{ checksum ".circleci/vendor/sdkman-install.sh" }}
+      - install_sdkman
+  install_sdks_alpine:
+    steps:
+      - run:
+          name: Installing Python
+          command: |
+            apk update
+            apk add python3 py3-pip
+      - aws-cli/install:
+          version: << pipeline.parameters.aws_version >>
+      - install_sdkman
+  install_sdkman:
+    steps:
       - run:
           name: Installing SDKMAN
           # The install script comes from https://get.sdkman.io/?rcupdate=false
@@ -269,6 +279,29 @@ jobs:
           command: make test-acceptance
           environment:
             TEST_SNYK_COMMAND: << parameters.test_snyk_command >>
+
+  test-alpine:
+    executor: alpine
+    working_directory: /home/node/snyk
+    parameters:
+      test_snyk_command:
+        type: string
+        default: /home/node/snyk/binary-releases/snyk-alpine
+    steps:
+      - checkout
+      # - attach_workspace:
+      #     at: .
+      - install_sdks_alpine
+      - aws-cli/install:
+          version: 2.2.32
+      # - run:
+      #     name: Configuring artifact
+      #     command: << parameters.test_snyk_command >> config set "api=${SNYK_API_KEY}"
+      # - run:
+      #     name: Testing artifact
+      #     command: make test-acceptance
+      #     environment:
+      #       TEST_SNYK_COMMAND: << parameters.test_snyk_command >>
 
   test-node:
     parameters:
@@ -441,112 +474,139 @@ workflows:
   version: 2
   test_and_release:
     jobs:
-      - install:
-          name: Install
-      - lint:
-          name: Lint
-          requires:
-            - Install
-      - build:
-          name: Build
-          requires:
-            - Install
-      - build-artifact:
-          name: Build (<< matrix.artifact >>)
-          requires:
-            - Build
-          filters:
-            branches:
-              ignore:
-                - master
-          matrix:
-            parameters:
-              artifact:
-                - snyk-node.tgz
-                - snyk-linux
-                - snyk-win.exe
-                - snyk-macos
-                - snyk-alpine
-                - snyk-for-docker-desktop-darwin-x64.tar.gz
-                - snyk-for-docker-desktop-darwin-arm64.tar.gz
-                - docker-mac-signed-bundle.tar.gz
-      - regression-test:
-          name: Regression Tests (snyk-node.tgz)
+      # - install:
+      #     name: Install
+      # - lint:
+      #     name: Lint
+      #     requires:
+      #       - Install
+      # - build:
+      #     name: Build
+      #     requires:
+      #       - Install
+      # - build-artifact:
+      #     name: Build (<< matrix.artifact >>)
+      #     requires:
+      #       - Build
+      #     filters:
+      #       branches:
+      #         ignore:
+      #           - master
+      #     matrix:
+      #       parameters:
+      #         artifact:
+      #           # - snyk-node.tgz
+      #           # - snyk-linux
+      #           # - snyk-win.exe
+      #           # - snyk-macos
+      #           - snyk-alpine
+      #           # - snyk-for-docker-desktop-darwin-x64.tar.gz
+      #           # - snyk-for-docker-desktop-darwin-arm64.tar.gz
+      #           # - docker-mac-signed-bundle.tar.gz
+      # - regression-test:
+      #     name: Regression Tests (snyk-node.tgz)
+      #     context: nodejs-install
+      #     requires:
+      #       - Build (snyk-node.tgz)
+      #     filters:
+      #       branches:
+      #         ignore:
+      #           - master
+      # - test-windows:
+      #     name: Acceptance Tests (snyk-win.exe)
+      #     context: nodejs-install
+      #     requires:
+      #       - Build (snyk-win.exe)
+      #     filters:
+      #       branches:
+      #         ignore:
+      #           - master
+      # - test-linux:
+      #     name: Acceptance Tests (snyk-linux)
+      #     context: nodejs-install
+      #     requires:
+      #       - Build (snyk-linux)
+      #     filters:
+      #       branches:
+      #         ignore:
+      #           - master
+      - test-alpine:
+          name: Acceptance Tests (snyk-alpine)
           context: nodejs-install
-          requires:
-            - Build (snyk-node.tgz)
+          # requires:
+          #   - Build (snyk-alpine)
           filters:
             branches:
               ignore:
                 - master
-      - test-windows:
-          name: Acceptance Tests (snyk-win.exe)
-          context: nodejs-install
-          requires:
-            - Build (snyk-win.exe)
-          filters:
-            branches:
-              ignore:
-                - master
-      - test-linux:
-          name: Acceptance Tests (snyk-linux)
-          context: nodejs-install
-          requires:
-            - Build (snyk-linux)
-          filters:
-            branches:
-              ignore:
-                - master
-      - test-node:
-          name: Acceptance Tests (Node v<< matrix.node_version >>)
-          context: nodejs-install
-          requires:
-            - Build (snyk-node.tgz)
-          filters:
-            branches:
-              ignore:
-                - master
-          matrix:
-            parameters:
-              node_version:
-                - '10.24.1'
-                - '12.22.5'
-                - '14.17.5'
-                - '16.13.0'
-      - test-unit:
-          name: Unit Tests
-          context: nodejs-install
-          requires:
-            - Build
-          filters:
-            branches:
-              ignore:
-                - master
-      - test-acceptance:
-          name: Acceptance Tests
-          context: nodejs-install
-          requires:
-            - Unit Tests
-          filters:
-            branches:
-              ignore:
-                - master
-      - test-tap:
-          name: Tap Tests
-          context: nodejs-install
-          requires:
-            - Build
-          filters:
-            branches:
-              ignore:
-                - master
-      - prod-release:
-          name: Production Release
-          context: nodejs-app-release
-          requires:
-            - Lint
-            - Build
-          filters:
-            branches:
-              only:
-                - master
+      # - test-windows:
+      #     name: Acceptance Tests (snyk-win.exe)
+      #     context: nodejs-install
+      #     requires:
+      #       - Build (snyk-win.exe)
+      #     filters:
+      #       branches:
+      #         ignore:
+      #           - master
+      # - test-linux:
+      #     name: Acceptance Tests (snyk-linux)
+      #     context: nodejs-install
+      #     requires:
+      #       - Build (snyk-linux)
+      #     filters:
+      #       branches:
+      #         ignore:
+      #           - master
+      # - test-node:
+      #     name: Acceptance Tests (Node v<< matrix.node_version >>)
+      #     context: nodejs-install
+      #     requires:
+      #       - Build (snyk-node.tgz)
+      #     filters:
+      #       branches:
+      #         ignore:
+      #           - master
+      #     matrix:
+      #       parameters:
+      #         node_version:
+      #           - '10.24.1'
+      #           - '12.22.5'
+      #           - '14.17.5'
+      #           - '16.13.0'
+      # - test-unit:
+      #     name: Unit Tests
+      #     context: nodejs-install
+      #     requires:
+      #       - Build
+      #     filters:
+      #       branches:
+      #         ignore:
+      #           - master
+      # - test-acceptance:
+      #     name: Acceptance Tests
+      #     context: nodejs-install
+      #     requires:
+      #       - Unit Tests
+      #     filters:
+      #       branches:
+      #         ignore:
+      #           - master
+      # - test-tap:
+      #     name: Tap Tests
+      #     context: nodejs-install
+      #     requires:
+      #       - Build
+      #     filters:
+      #       branches:
+      #         ignore:
+      #           - master
+      # - prod-release:
+      #     name: Production Release
+      #     context: nodejs-app-release
+      #     requires:
+      #       - Lint
+      #       - Build
+      #     filters:
+      #       branches:
+      #         only:
+      #           - master
