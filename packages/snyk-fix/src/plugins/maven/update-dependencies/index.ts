@@ -1,6 +1,6 @@
 import * as debugLib from 'debug';
 import * as poke from 'xmlpoke';
-import { XMLParser, X2jOptionsOptional,  XMLBuilder} from 'fast-xml-parser';
+import { XMLParser, X2jOptionsOptional, XMLBuilder } from 'fast-xml-parser';
 
 import { validateRequiredData } from '../../python/handlers/validate-required-data';
 import {
@@ -14,9 +14,15 @@ import { PluginFixResponse } from '../../types';
 
 const debug = debugLib('snyk-fix:maven');
 
+enum PROVENANCE_TYPE {
+  DEPENDENCY_MANAGEMENT = 'dependencyManagement',
+  DEPENDENCY = 'dependency',
+  PROPERTY = 'property',
+}
+
 export async function updateDependencies(
   entity: EntityToFix,
-  _options: FixOptions,
+  options: FixOptions,
 ): Promise<PluginFixResponse> {
   const handlerResult: PluginFixResponse = {
     succeeded: [],
@@ -43,7 +49,7 @@ export async function updateDependencies(
       trimValues: true,
       // ignore attributes to be parsed
       // ignoreAttributes: true,
-      alwaysCreateTextNode: true
+      alwaysCreateTextNode: true,
     };
     const parser = new XMLParser({});
     const pomJson = parser.parse(pomXml, parseOptions);
@@ -55,6 +61,7 @@ export async function updateDependencies(
       debug(`Applying upgrade for ${upgradeFrom}`);
 
       const { changes } = await applyUpgrade(
+        options,
         pomJson,
         pomXml,
         upgradeFrom,
@@ -102,7 +109,24 @@ function ensureArray<T>(value?: T | T[]): T[] {
   return [value];
 }
 
+/**
+ *
+ * @param pomJson
+ * @param pomXml
+ * @param upgradeFrom
+ * @param upgradeData
+ * @param workspace
+ * @param targetFile
+ * @returns  Promise<{ changes: FixChangesSummary[] }>
+ *
+ * All fixes are based on the fact that we do not have full provenance information
+ * aka information on what other parent poms are in the chain as we are fixing 1 pom at a time
+ * and currently have no way to collect provenance info via CLI
+ *
+ * All fixes because of the restriction above are "inline" to force the package version.
+ */
 async function applyUpgrade(
+  options: FixOptions,
   pomJson: any,
   pomXml: string,
   upgradeFrom: string,
@@ -122,27 +146,35 @@ async function applyUpgrade(
     const dependencies = ensureArray(
       pomJson?.project?.dependencies?.dependency,
     );
-    debug(`dependencies=${JSON.stringify(dependencies)}`);
-    for (const dependency of dependencies) {
-      debug(
-        `${pkgName} does this equal ${dependency?.groupId}:${dependency?.artifactId}`,
-      );
-        debug('applyPropertyUpgrade', {newFileContents})
 
-        newFileContents = applyDependencyUpgrade(pomXml, newVersion, dependency.groupId, dependency.artifactId)
-        if (pkgName === `${dependency?.groupId}:${dependency?.artifactId}`) {
-        // dependency.version = newVersion;
+    for (const dep of dependencies) {
+      if (pkgName === `${dep?.groupId}:${dep?.artifactId}`) {
+        // Apply a fix based on fix type
+        const { dependency: dependencyWithVersion, type } = resolveVersion(
+          dep,
+          pomJson,
+        );
+        newFileContents = upgradeDependency(
+          dependencyWithVersion,
+          newVersion,
+          pomXml,
+          type,
+        );
         foundDependency = true;
         break;
       }
     }
-    debug(`foundDependency ${pkgName} = ${foundDependency}`);
-
     if (!foundDependency || !newFileContents) {
-      throw new Error('Could not find dependency ' + upgradeFrom);
+      throw new Error(`Could not find dependency ${upgradeFrom}`);
     }
 
-    await workspace.writeFile(targetFile, newFileContents);
+    if (!options.dryRun) {
+      debug('Writing changes to file');
+      await workspace.writeFile(targetFile, newFileContents);
+    } else {
+      debug('Skipping writing changes to file in --dry-run mode');
+    }
+
     changes.push({
       success: true,
       userMessage: `Upgraded ${pkgName} from ${version} to ${newVersion}`,
@@ -151,6 +183,7 @@ async function applyUpgrade(
       to: upgradeTo, //`${pkgName}@${newVersion}`,
     });
   } catch (e) {
+    debug(e);
     changes.push({
       success: false,
       reason: e.message,
@@ -162,6 +195,50 @@ async function applyUpgrade(
   return { changes };
 }
 
+function resolveVersion(
+  dependency: MavenDependency,
+  pomJson: any,
+): {
+  type: PROVENANCE_TYPE;
+  dependency: MavenDependency;
+} {
+  const { version, groupId, artifactId } = dependency;
+
+  // version defined inline
+  if (version) {
+    const provenanceType = isPropertyVersion(version)
+      ? PROVENANCE_TYPE.PROPERTY
+      : PROVENANCE_TYPE.DEPENDENCY;
+
+    return { type: provenanceType, dependency };
+  }
+
+  // find where the version is defined
+  // (dependencyManagement or dependencyManagement with property)
+  const dependencyManagementDependencies = ensureArray(
+    pomJson?.project?.dependencyManagement?.dependencies?.dependency,
+  );
+
+  for (const x of dependencyManagementDependencies) {
+    if (`${groupId}:${artifactId}` === `${x.groupId}:${x.artifactId}`) {
+      if (x.version) {
+        const provenanceType = isPropertyVersion(x.version)
+          ? PROVENANCE_TYPE.PROPERTY
+          : PROVENANCE_TYPE.DEPENDENCY_MANAGEMENT;
+        return {
+          type: provenanceType,
+          dependency: { ...dependency, version: x.version },
+        };
+      }
+      break;
+    }
+  }
+
+  debug(
+    'Could not determine where the dependency version is set, defaulting to add it inline',
+  );
+  return { type: PROVENANCE_TYPE.DEPENDENCY, dependency };
+}
 
 function applyDependencyUpgrade(
   pomXml: string,
@@ -182,6 +259,37 @@ function applyDependencyUpgrade(
   }
 }
 
+/**
+ * Extracts package information from a package name.
+ * Returns pomXML file with the fix applied.
+ */
+function applyPropertyUpgrade(
+  pomXml: string,
+  upgradedVersion: string,
+  propertyName: string,
+): string {
+  debug(
+    `Applying property upgrade upgradedVersion=${upgradedVersion}, propertyName=${propertyName}`,
+  );
+  const { simpleXML, restore } = simplifyXml(pomXml);
+  try {
+    if (propertyName === 'project.parent.version') {
+      const fixedXML = poke(simpleXML, (xml) => {
+        xml.errorOnNoMatches();
+        xml.set(`//parent/version`, upgradedVersion);
+      });
+      return restore(fixedXML);
+    }
+    const fixedXML = poke(simpleXML, (xml) => {
+      xml.errorOnNoMatches();
+      xml.set(`//properties/${propertyName}`, upgradedVersion);
+    });
+    return restore(fixedXML);
+  } catch (e) {
+    throw new Error('Failed to apply property upgrade');
+  }
+}
+
 function simplifyXml(pomXml: string) {
   const SIMPLE_PROJECT = '<project>';
   const PROJECT_TAG_RE = /(<project[\s\S]*?>)/;
@@ -195,4 +303,54 @@ function simplifyXml(pomXml: string) {
     simpleXML,
     restore,
   };
+}
+
+interface MavenDependency {
+  version: string;
+  groupId: string;
+  artifactId: string;
+}
+
+function upgradeDependency(
+  dependency: MavenDependency,
+  newVersion: string,
+  pomXml: string,
+  versionProvenance: PROVENANCE_TYPE,
+): string {
+  let updatedPomXml;
+  if (
+    versionProvenance === PROVENANCE_TYPE.DEPENDENCY ||
+    versionProvenance === PROVENANCE_TYPE.DEPENDENCY_MANAGEMENT
+  ) {
+    updatedPomXml = applyDependencyUpgrade(
+      pomXml,
+      newVersion,
+      dependency.groupId,
+      dependency.artifactId,
+    );
+  } else if (versionProvenance === PROVENANCE_TYPE.PROPERTY) {
+    const { version } = dependency;
+    if (version) {
+      const propertyName = getPropertyVersionName(dependency.version);
+      updatedPomXml = applyPropertyUpgrade(pomXml, newVersion, propertyName);
+    }
+  } else {
+    throw new Error(`Unsupported fix type: ${versionProvenance}`);
+  }
+
+  return updatedPomXml;
+}
+
+function isPropertyVersion(version: string): boolean {
+  return version.startsWith('$');
+}
+
+function getPropertyVersionName(version: string): string {
+  const regex = /{(.*)}/g;
+  const result = regex.exec(version);
+
+  if (Array.isArray(result)) {
+    return result[1];
+  }
+  return version;
 }
