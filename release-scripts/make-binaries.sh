@@ -7,16 +7,20 @@ mv "$(npm pack --workspace '@snyk/fix')" binary-releases/snyk-fix.tgz
 mv "$(npm pack --workspace '@snyk/protect')" binary-releases/snyk-protect.tgz
 mv "$(npm pack)" binary-releases/snyk.tgz
 
-npx pkg . --compress Brotli -t node16-alpine-x64 -o binary-releases/snyk-alpine
-npx pkg . --compress Brotli -t node16-linux-x64  -o binary-releases/snyk-linux
-npx pkg . --compress Brotli -t node16-macos-x64  -o binary-releases/snyk-macos
-npx pkg . --compress Brotli -t node16-win-x64    -o binary-releases/snyk-win-unsigned.exe
+# patched producer so pkg builds native modules on the fly
+cp patches/crypto-package.json node_modules/ssh2/lib/protocol/crypto/package.json
+patch ./node_modules/pkg/lib-es5/producer.js < ./patches/producer.js.patch
+
+npx pkg . --debug -t node16-alpine-x64 -o binary-releases/snyk-alpine
+npx pkg . --debug -t node16-linux-x64  -o binary-releases/snyk-linux
+npx pkg . --debug -t node16-macos-x64  -o binary-releases/snyk-macos
+npx pkg . --debug -t node16-win-x64    -o binary-releases/snyk-win-unsigned.exe
 
 # Why `--no-bytecode` for Linux/arm64:
 #   arm64 bytecode generation requires various build tools on an x64 build 
 #   environment. So disabling until we can support it. It's an optimisation.
 #   https://github.com/vercel/pkg#targets
-npx pkg . --compress Brotli -t node16-linux-arm64 -o binary-releases/snyk-linux-arm64 --no-bytecode
+npx pkg . --debug -t node16-linux-arm64 -o binary-releases/snyk-linux-arm64
 
 ./docker-desktop/build.sh darwin x64
 ./docker-desktop/build.sh darwin arm64

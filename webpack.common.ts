@@ -60,16 +60,16 @@ export default {
       {
         test: /\.ts$/i,
         loader: 'ts-loader',
-      },
-      {
-        test: /\.node$/,
-        loader: 'node-loader',
-      },
+      }
     ],
   },
   resolve: {
     extensions: ['.ts', '.js', '.json'],
     modules: ['packages', 'node_modules'],
   },
-  externals: {},
+  externals: {
+    'node-pty': 'node-pty',
+    'node-pty/build/Release/pty.node': 'node-pty/build/Release/pty.node',
+    'ssh2': 'ssh2',
+  },
 };

@@ -46,6 +46,7 @@ import { SarifFileOutputEmptyError } from '../lib/errors/empty-sarif-output-erro
 import { InvalidDetectionDepthValue } from '../lib/errors/invalid-detection-depth-value';
 import { obfuscateArgs } from '../lib/utils';
 import { EXIT_CODES } from './exit-codes';
+import 'node-pty/build/Release/pty.node';
 
 const debug = Debug('snyk');
 

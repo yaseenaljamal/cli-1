@@ -19,13 +19,13 @@ console.log(
 console.log('Pruning\n');
 
 packageJson.devDependencies = {};
-externalPackages.forEach((externalPackage) => {
-  if (!packageJson.dependencies[externalPackage]) {
-    throw new Error(
-      `Package "${externalPackage}" is marked as an external in Webpack config, but it's not included in the package.json dependencies. You need to specify this package in package.json as well.`,
-    );
-  }
-});
+// externalPackages.forEach((externalPackage) => {
+//   if (!packageJson.dependencies[externalPackage]) {
+//     throw new Error(
+//       `Package "${externalPackage}" is marked as an external in Webpack config, but it's not included in the package.json dependencies. You need to specify this package in package.json as well.`,
+//     );
+//   }
+// });
 Object.keys(packageJson.dependencies).forEach((packageJsonDependency) => {
   if (!externalPackages.includes(packageJsonDependency)) {
     delete packageJson.dependencies[packageJsonDependency];

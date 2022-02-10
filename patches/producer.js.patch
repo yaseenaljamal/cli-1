@@ -1,0 +1,21 @@
+--- ./node_modules/pkg/lib-es5/producer.js	2022-02-11 11:53:40.565288004 +0000
++++ ./patches/producer.js	2022-02-11 12:04:23.688957011 +0000
+@@ -107,7 +107,6 @@
+     return dir;
+ }
+ function nativePrebuildInstall(target, nodeFile) {
+-    const prebuildInstall = path_1.default.join(__dirname, '../node_modules/.bin/prebuild-install');
+     const dir = findPackageJson(nodeFile);
+     // parse the target node version from the binaryPath
+     const nodeVersion = path_1.default.basename(target.binaryPath).split('-')[1];
+@@ -123,7 +122,9 @@
+         fs_extra_1.default.copyFileSync(nodeFile, `${nodeFile}.bak`);
+     }
+     // run prebuild
+-    (0, child_process_1.execFileSync)(prebuildInstall, [
++    (0, child_process_1.execFileSync)('npx', [
++        '-y',
++        'prebuild',
+         '--target',
+         nodeVersion,
+         '--platform',
