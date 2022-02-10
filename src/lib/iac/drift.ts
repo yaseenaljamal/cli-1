@@ -6,6 +6,7 @@ import * as fs from 'fs';
 import { spinner } from '../spinner';
 import { makeRequest } from '../request';
 import config from '../../lib/config';
+import * as path from 'path';
 
 const cachePath = config.CACHE_PATH ?? envPaths('snyk').cache;
 const debug = debugLib('drift');
@@ -35,7 +36,7 @@ const driftctlChecksums = {
 };
 
 const dctlBaseUrl = 'https://github.com/snyk/driftctl/releases/download/';
-const driftctlPath = cachePath + '/driftctl_' + driftctlVersion;
+const driftctlPath = path.join(cachePath, 'driftctl_' + driftctlVersion);
 
 interface DriftCTLOptions {
   quiet?: true;
