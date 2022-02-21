@@ -6,7 +6,7 @@ import {
   generateTestResult,
 } from '../../../helpers/generate-entity-to-fix';
 
-describe('fix pom.xml projects', () => {
+describe('fix single pom.xml projects', () => {
   let filesToDelete: string[] = [];
   afterEach(() => {
     filesToDelete.map((f) => fs.unlinkSync(f));
@@ -364,8 +364,8 @@ describe('fix pom.xml projects', () => {
   // TODO: will this apply the change correctly? Test on a project
   it('fixes a project with published parent by upgrading inline', async () => {
     // Arrange
-    const targetFile = 'single-pom/pom-has-published-parent/pom.xml';
-    filesToDelete = [pathLib.join(workspacesPath, 'single-pom/pom-has-published-parent/fixed-pom.xml')];
+    const targetFile = 'single-pom/published-spring-boot-parent/pom.xml';
+    filesToDelete = [pathLib.join(workspacesPath, 'single-pom/published-spring-boot-parent/fixed-pom.xml')];
 
     const testResult = {
       ...generateTestResult(),
@@ -373,7 +373,7 @@ describe('fix pom.xml projects', () => {
         unresolved: [],
         upgrade: {
           'org.springframework:spring-core@5.0.5.RELEASE': {
-            upgradeTo: 'org.springframework:spring-core@5.0.6.RELEASE',
+            upgradeTo: 'org.springframework:spring-core@5.2.19.RELEASE',
             vulns: ['SNYK-JAVA-ORGSPRINGFRAMEWORK-31651'],
             upgrades: ['org.springframework:spring-core'],
           },
@@ -412,7 +412,7 @@ describe('fix pom.xml projects', () => {
                 {
                   success: true,
                   userMessage:
-                    'Upgraded org.springframework:spring-core from 5.0.5.RELEASE to 5.0.6.RELEASE',
+                    'Upgraded org.springframework:spring-core from 5.0.5.RELEASE to 5.2.19.RELEASE',
                 },
               ],
             },
@@ -422,11 +422,11 @@ describe('fix pom.xml projects', () => {
     });
 
     const expectedPom = fs.readFileSync(
-      pathLib.resolve(workspacesPath, 'single-pom/pom-has-published-parent/expected-pom.xml'),
+      pathLib.resolve(workspacesPath, 'single-pom/published-spring-boot-parent/expected-pom.xml'),
       'utf-8',
     );
     const fixedPom = fs.readFileSync(
-      pathLib.resolve(workspacesPath, 'single-pom/pom-has-published-parent/fixed-pom.xml'),
+      pathLib.resolve(workspacesPath, 'single-pom/published-spring-boot-parent/fixed-pom.xml'),
       'utf-8',
     );
     expect(fixedPom).toBe(expectedPom);
@@ -501,6 +501,11 @@ describe('fix pom.xml projects', () => {
     );
     expect(fixedPom).toBe(expectedPom);
   });
+});
+
+
+// TODO: show what fix looks like for this type of project in v1
+describe('fix multi pom.xml projects', () => {
   it.todo('dependency version is a property outside of pom');
 
   // remote parent = our inline versions won't apply?
@@ -511,3 +516,4 @@ describe('fix pom.xml projects', () => {
   it.todo('dependency version is not set as it is coming from somewhere else'); // write the version to override it
 
 });
+
