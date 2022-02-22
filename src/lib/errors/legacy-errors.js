@@ -65,6 +65,16 @@ const codes = {
   INVALID_SEVERITY_THRESHOLD: errors.invalidSeverityThreshold,
 };
 
+function noSupportedManifestsMessage(error) {
+  return chalk.bold.red(
+    error.message +
+      '.\nPlease see our documentation for supported languages and ' +
+      'target files: ' +
+      chalk.underline('https://snyk.co/udVgQ') +
+      ' and make sure you are in the right directory.',
+  );
+}
+
 module.exports = function error(command) {
   const e = new Error('Unknown command "' + command + '"');
   e.code = 'UNKNOWN_COMMAND';
@@ -76,6 +86,10 @@ module.exports.message = function(error) {
   if (error instanceof Error) {
     if (error.code === 'VULNS') {
       return error.message;
+    }
+    if (error.code === 3) {
+      let message = noSupportedManifestsMessage(error);
+      return message;
     }
 
     // try to lookup the error string based either on the error code OR
