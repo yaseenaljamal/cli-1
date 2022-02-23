@@ -394,19 +394,19 @@ workflows:
           name: Build
           requires:
             - Install
-      - test-linux:
-          name: Jest Tests (Linux, Node v<< matrix.node_version >>)
-          context: nodejs-install
-          requires:
-            - Build
-          matrix:
-            parameters:
-              node_version: ['10.24.1', '12.22.9', '14.18.2', '16.13.2']
-      - test-tap:
-          name: Tap Tests
-          context: nodejs-install
-          requires:
-            - Build
+#      - test-linux:
+#          name: Jest Tests (Linux, Node v<< matrix.node_version >>)
+#          context: nodejs-install
+#          requires:
+#            - Build
+#          matrix:
+#            parameters:
+#              node_version: ['10.24.1', '12.22.9', '14.18.2', '16.13.2']
+#      - test-tap:
+#          name: Tap Tests
+#          context: nodejs-install
+#          requires:
+#            - Build
       - build-artifacts:
           name: Build Artifacts
           requires:
@@ -430,30 +430,30 @@ workflows:
           name: Regression Tests
           context: nodejs-install
           requires:
-            - Build Artifacts
-      - should-release:
-          name: Release?
-          type: approval
-          requires:
-            - Lint
-            - Tap Tests
-            - Jest Tests (Linux, Node v10.24.1)
-            - Jest Tests (Linux, Node v12.22.9)
-            - Jest Tests (Linux, Node v14.18.2)
-            - Jest Tests (Linux, Node v16.13.2)
-            - Acceptance Tests (snyk-win.exe)
-            - Acceptance Tests (snyk-linux-arm64)
-            - Regression Tests
-          filters:
-            branches:
-              only:
-                - master
-      - release:
-          name: Release
-          context: nodejs-app-release
-          requires:
-            - Release?
-          filters:
-            branches:
-              only:
-                - master
+#            - Build Artifacts
+#      - should-release:
+#          name: Release?
+#          type: approval
+#          requires:
+#            - Lint
+#            - Tap Tests
+#            - Jest Tests (Linux, Node v10.24.1)
+#            - Jest Tests (Linux, Node v12.22.9)
+#            - Jest Tests (Linux, Node v14.18.2)
+#            - Jest Tests (Linux, Node v16.13.2)
+#            - Acceptance Tests (snyk-win.exe)
+#            - Acceptance Tests (snyk-linux-arm64)
+#            - Regression Tests
+#          filters:
+#            branches:
+#              only:
+#                - master
+#      - release:
+#          name: Release
+#          context: nodejs-app-release
+#          requires:
+#            - Release?
+#          filters:
+#            branches:
+#              only:
+#                - master

@@ -97,10 +97,14 @@ export async function test(
           },
           [ValidFileType.Terraform, ValidFileType.TFVARS],
         );
+        console.log('tfFilesToParse')
+        console.log(tfFilesToParse)
         const {
           parsedFiles: parsedTfFiles,
           failedFiles: failedTfFiles,
         } = parseTerraformFiles(tfFilesToParse);
+        console.log('parsedFiles')
+        console.log(parsedFiles)
 
         parsedFiles = parsedFiles.concat(parsedTfFiles);
         failedFiles = failedFiles.concat(failedTfFiles);
