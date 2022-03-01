@@ -411,11 +411,11 @@ workflows:
           name: Build Artifacts
           requires:
             - Build
-          filters:
-            branches:
-              only:
-                - /^chore\/.+$/
-                - master
+          # filters:
+          #   branches:
+          #     only:
+          #       - /^chore\/.+$/
+          #       - master
       - test-windows:
           name: Acceptance Tests (snyk-win.exe)
           context: nodejs-install
