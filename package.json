@@ -127,7 +127,7 @@
     "snyk-python-plugin": "1.22.2",
     "snyk-resolve": "1.1.0",
     "snyk-resolve-deps": "4.7.3",
-    "snyk-sbt-plugin": "file:../snyk-sbt-plugin/snyk-sbt-plugin-10.0.0-local.tgz",
+    "snyk-sbt-plugin": "file:snyk-sbt-plugin-10.0.0-local.tgz",
     "snyk-try-require": "^2.0.2",
     "strip-ansi": "^5.2.0",
     "tar": "^6.1.2",
