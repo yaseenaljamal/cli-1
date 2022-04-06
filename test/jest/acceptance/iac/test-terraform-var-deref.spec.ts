@@ -1,23 +1,33 @@
 import { startMockServer, isValidJSONString } from './helpers';
 import * as path from 'path';
+import { FakeServer } from '../../../acceptance/fake-server';
 
 jest.setTimeout(50000);
 
 describe('Terraform Language Support', () => {
+  let server: FakeServer;
   let run: (
     cmd: string,
   ) => Promise<{ stdout: string; stderr: string; exitCode: number }>;
   let teardown: () => void;
 
   beforeAll(async () => {
-    const result = await startMockServer();
-    run = result.run;
-    teardown = result.teardown;
+    ({ server, run, teardown } = await startMockServer());
+
+    server.setFeatureFlag('iacTerraformVarSupport', true);
   });
 
   afterAll(async () => teardown());
 
   describe('without feature flag', () => {
+    beforeAll(() => {
+      server.setFeatureFlag('iacTerraformVarSupport', false);
+    });
+
+    afterAll(() => {
+      server.setFeatureFlag('iacTerraformVarSupport', true);
+    });
+
     it('does not dereference variables', async () => {
       const { stdout, exitCode } = await run(
         `snyk iac test ./iac/terraform/var_deref`,
@@ -56,7 +66,7 @@ describe('Terraform Language Support', () => {
       // TODO: can be merged with the existing test-terraform.spec.ts when the flag is removed
       it('finds issues in Terraform file', async () => {
         const { stdout, exitCode } = await run(
-          `snyk iac test --org=tf-lang-support iac/terraform/var_deref/sg_open_ssh.tf`,
+          `snyk iac test iac/terraform/var_deref/sg_open_ssh.tf`,
         );
 
         expect(stdout).toContain(
@@ -73,7 +83,7 @@ describe('Terraform Language Support', () => {
 
       it('returns error empty Terraform file', async () => {
         const { exitCode } = await run(
-          `snyk iac test --org=tf-lang-support ./iac/terraform/empty_file.tf`,
+          `snyk iac test ./iac/terraform/empty_file.tf`,
         );
         expect(exitCode).toBe(3);
       });
@@ -81,7 +91,7 @@ describe('Terraform Language Support', () => {
     describe('single non-terraform files', () => {
       it('finds issues in a Terraform plan file', async () => {
         const { stdout, exitCode } = await run(
-          `snyk iac test --org=tf-lang-support ./iac/terraform-plan/tf-plan-create.json`,
+          `snyk iac test ./iac/terraform-plan/tf-plan-create.json`,
         );
         expect(stdout).toContain(
           'Testing ./iac/terraform-plan/tf-plan-create.json',
@@ -95,7 +105,7 @@ describe('Terraform Language Support', () => {
       });
       it('finds issues in CloudFormation YAML file', async () => {
         const { stdout, exitCode } = await run(
-          `snyk iac test --org=tf-lang-support ./iac/cloudformation/aurora-valid.yml`,
+          `snyk iac test ./iac/cloudformation/aurora-valid.yml`,
         );
         expect(stdout).toContain(
           'Testing ./iac/cloudformation/aurora-valid.yml',
@@ -112,7 +122,7 @@ describe('Terraform Language Support', () => {
 
       it('finds issues in CloudFormation JSON file', async () => {
         const { stdout, exitCode } = await run(
-          `snyk iac test --org=tf-lang-support ./iac/cloudformation/fargate-valid.json`,
+          `snyk iac test ./iac/cloudformation/fargate-valid.json`,
         );
         expect(stdout).toContain(
           'Testing ./iac/cloudformation/fargate-valid.json',
@@ -129,7 +139,7 @@ describe('Terraform Language Support', () => {
 
       it('finds issues in ARM JSON file', async () => {
         const { stdout, exitCode } = await run(
-          `snyk iac test --org=tf-lang-support ./iac/arm/rule_test.json`,
+          `snyk iac test ./iac/arm/rule_test.json`,
         );
         expect(stdout).toContain('Testing ./iac/arm/rule_test.json');
         expect(stdout).toContain('Infrastructure as code issues:');
@@ -143,7 +153,7 @@ describe('Terraform Language Support', () => {
       });
       it('finds issues in Kubernetes YAML file', async () => {
         const { stdout, exitCode } = await run(
-          `snyk iac test --org=tf-lang-support ./iac/kubernetes/pod-privileged.yaml`,
+          `snyk iac test ./iac/kubernetes/pod-privileged.yaml`,
         );
         expect(stdout).toContain(
           'Testing ./iac/kubernetes/pod-privileged.yaml',
@@ -158,7 +168,7 @@ describe('Terraform Language Support', () => {
 
       it('finds issues in Kubernetes YAML multi file', async () => {
         const { stdout, exitCode } = await run(
-          `snyk iac test --org=tf-lang-support ./iac/kubernetes/pod-privileged-multi.yaml`,
+          `snyk iac test ./iac/kubernetes/pod-privileged-multi.yaml`,
         );
         expect(stdout).toContain(
           'Testing ./iac/kubernetes/pod-privileged-multi.yaml',
@@ -176,7 +186,7 @@ describe('Terraform Language Support', () => {
   describe('directories', () => {
     it('dereferences variables in nested directories', async () => {
       const { stdout, exitCode } = await run(
-        `snyk iac test --org=tf-lang-support ./iac/terraform/var_deref`,
+        `snyk iac test ./iac/terraform/var_deref`,
       );
 
       expect(stdout).toContain('Testing sg_open_ssh.tf...');
@@ -199,9 +209,7 @@ describe('Terraform Language Support', () => {
     });
 
     it('scans a mix of IaC files in nested directories', async () => {
-      const { stdout, exitCode } = await run(
-        `snyk iac test --org=tf-lang-support ./iac`,
-      );
+      const { stdout, exitCode } = await run(`snyk iac test ./iac`);
 
       expect(stdout).toContain(
         `Testing ${path.join('kubernetes', 'pod-privileged.yaml')}`,
@@ -251,7 +259,7 @@ describe('Terraform Language Support', () => {
   describe('other functions', () => {
     it('is backwards compatible without variable dereferencing', async () => {
       const { stdout, exitCode } = await run(
-        `snyk iac test --org=tf-lang-support iac/terraform/sg_open_ssh.tf`,
+        `snyk iac test iac/terraform/sg_open_ssh.tf`,
       );
 
       expect(stdout).toContain('Testing iac/terraform/sg_open_ssh.tf...');
@@ -266,7 +274,7 @@ describe('Terraform Language Support', () => {
 
     it('filters out issues when using severity threshold', async () => {
       const { stdout, exitCode } = await run(
-        `snyk iac test --org=tf-lang-support iac/terraform/sg_open_ssh.tf --severity-threshold=high`,
+        `snyk iac test iac/terraform/sg_open_ssh.tf --severity-threshold=high`,
       );
 
       expect(stdout).toContain('Testing iac/terraform/sg_open_ssh.tf...');
@@ -280,7 +288,7 @@ describe('Terraform Language Support', () => {
 
     it('filters out issues when using detection depth', async () => {
       const { stdout, exitCode } = await run(
-        `snyk iac test --org=tf-lang-support ./iac/terraform/ --detection-depth=1`,
+        `snyk iac test ./iac/terraform/ --detection-depth=1`,
       );
 
       expect(stdout).toContain(
@@ -316,7 +324,7 @@ describe('Terraform Language Support', () => {
 
     it('outputs an error for files with invalid HCL2', async () => {
       const { stdout, exitCode } = await run(
-        `snyk iac test --org=tf-lang-support ./iac/terraform/sg_open_ssh_invalid_hcl2.tf`,
+        `snyk iac test ./iac/terraform/sg_open_ssh_invalid_hcl2.tf`,
       );
 
       expect(stdout).toContain('We were unable to parse the Terraform file');
@@ -325,7 +333,7 @@ describe('Terraform Language Support', () => {
 
     it('outputs the expected text when running with --sarif flag', async () => {
       const { stdout, exitCode } = await run(
-        `snyk iac test --org=tf-lang-support ./iac/terraform/sg_open_ssh.tf --sarif`,
+        `snyk iac test ./iac/terraform/sg_open_ssh.tf --sarif`,
       );
 
       expect(isValidJSONString(stdout)).toBe(true);
@@ -336,7 +344,7 @@ describe('Terraform Language Support', () => {
 
     it('outputs the expected text when running with --json flag', async () => {
       const { stdout, exitCode } = await run(
-        `snyk iac test --org=tf-lang-support ./iac/terraform/sg_open_ssh.tf --json`,
+        `snyk iac test ./iac/terraform/sg_open_ssh.tf --json`,
       );
 
       expect(isValidJSONString(stdout)).toBe(true);
