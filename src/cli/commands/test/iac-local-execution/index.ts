@@ -145,6 +145,7 @@ export async function test(
       failures: isLocalFolder(pathToScan)
         ? allFailedFiles.map(removeFileContent)
         : undefined,
+      ignoreCount,
     };
   } finally {
     cleanLocalCache();

@@ -54,6 +54,7 @@ import {
 import { isIacShareResultsOptions } from './iac-local-execution/assert-iac-options-flag';
 import { assertIaCOptionsFlags } from './iac-local-execution/assert-iac-options-flag';
 import { hasFeatureFlag } from '../../../lib/feature-flags';
+import { formatIacTestSummary } from '../../../lib/formatters/iac-output';
 
 const debug = Debug('snyk-test');
 const SEPARATOR = '\n-------------------------------------------------------\n';
@@ -103,11 +104,11 @@ export default async function test(
 
   // Holds an array of scanned file metadata for output.
   let iacScanFailures: IacFileInDirectory[] | undefined;
+  let iacIgnoredIssuesCount = 0;
   let iacOutputMeta: IacOutputMeta | undefined;
 
-  const isNewIacOutputSupported = options.iac
-    ? await hasFeatureFlag('iacCliOutput', options)
-    : false;
+  const isNewIacOutputSupported =
+    !!options.iac && !!(await hasFeatureFlag('iacCliOutput', options));
 
   if (shouldPrintIacInitialMessage(options, isNewIacOutputSupported)) {
     console.log(
@@ -131,14 +132,20 @@ export default async function test(
     try {
       if (options.iac) {
         assertIaCOptionsFlags(process.argv);
-        const { results, failures } = await iacTest(path, testOpts);
+        const { results, failures, ignoreCount } = await iacTest(
+          path,
+          testOpts,
+        );
+
         iacOutputMeta = {
           orgName: results[0]?.org,
           projectName: results[0]?.projectName,
           gitRemoteUrl: results[0]?.meta?.gitRemoteUrl,
         };
+
         res = results;
         iacScanFailures = failures;
+        iacIgnoredIssuesCount += ignoreCount;
       } else {
         res = await snyk.test(path, testOpts);
       }
@@ -274,6 +281,20 @@ export default async function test(
         getIacDisplayErrorFileOutput(reason, isNewIacOutputSupported),
       );
     }
+  }
+
+  if (iacOutputMeta && isNewIacOutputSupported) {
+    response += `${EOL}${SEPARATOR}${EOL}`;
+
+    const iacTestSummary = `${formatIacTestSummary(
+      {
+        results,
+        ignoreCount: iacIgnoredIssuesCount,
+      },
+      iacOutputMeta,
+    )}`;
+
+    response += iacTestSummary;
   }
 
   if (results.length > 1) {
