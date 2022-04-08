@@ -54,9 +54,50 @@ import {
 import { isIacShareResultsOptions } from './iac-local-execution/assert-iac-options-flag';
 import { assertIaCOptionsFlags } from './iac-local-execution/assert-iac-options-flag';
 import { hasFeatureFlag } from '../../../lib/feature-flags';
+import { spawnSync } from 'child_process';
 
 const debug = Debug('snyk-test');
 const SEPARATOR = '\n-------------------------------------------------------\n';
+
+async function runEnvSnykIacTest(executable: string, ...args: MethodArgs) {
+  let options: any = {};
+
+  if (typeof args[args.length - 1] === 'object') {
+    options = args.pop() as object;
+  }
+
+  delete options._;
+
+  const safeOptions = {
+    args,
+    options,
+  };
+
+  const env = Object.assign({}, process.env, {
+    SNYK_IAC_TEST_OPTIONS: Buffer.from(JSON.stringify(safeOptions)).toString(
+      'base64',
+    ),
+  });
+
+  const spawned = spawnSync(executable, {
+    stdio: ['ignore', 'inherit', 'inherit'],
+    env,
+  });
+
+  if (spawned.signal) {
+    process.exit(2);
+  }
+
+  if (spawned.status) {
+    process.exit(spawned.status);
+  }
+
+  if (spawned.error) {
+    throw spawned.error;
+  }
+
+  process.exit(0);
+}
 
 // TODO: avoid using `as any` whenever it's possible
 
@@ -65,6 +106,13 @@ export default async function test(
 ): Promise<TestCommandResult> {
   const { options: originalOptions, paths } = processCommandArgs(...args);
   const options = setDefaultTestOptions(originalOptions);
+
+  const envSnykIacTest = process.env['SNYK_IAC_TEST'];
+
+  if (options.iac && envSnykIacTest) {
+    await runEnvSnykIacTest(envSnykIacTest, ...args);
+  }
+
   validateTestOptions(options);
   validateCredentials(options);
 
