@@ -1,6 +1,5 @@
 import { isLocalFolder } from '../../../../lib/detect';
 import {
-  EngineType,
   IacFileParsed,
   IacFileParseFailure,
   IaCTestFlags,
@@ -15,23 +14,15 @@ import {
   applyCustomSeverities,
   cleanLocalCache,
   getIacOrgSettings,
-  loadContentForFiles,
-  parseFiles,
-  scanFiles,
   trackUsage,
 } from './measurable-methods';
 import { UnsupportedEntitlementError } from '../../../../lib/errors/unsupported-entitlement-error';
 import config from '../../../../lib/config';
-import { findAndLoadPolicy } from '../../../../lib/policy';
-import { isFeatureFlagSupportedForOrg } from '../../../../lib/feature-flags';
-import { initRules } from './rules';
-import { NoFilesToScanError } from './file-loader';
 import { processResults } from './process-results';
 import { generateProjectAttributes, generateTags } from '../../monitor';
-import {
-  getAllDirectoriesForPath,
-  getFilesForDirectory,
-} from './directory-loader';
+import { execute } from '../../../../lib/sub-process';
+import { RegulaOutput } from './regula-types';
+import { formatRegulaResults } from './regula-formatters';
 
 // this method executes the local processing engine and then formats the results to adapt with the CLI output.
 // this flow is the default GA flow for IAC scanning.
@@ -52,63 +43,17 @@ export async function test(
     const tags = parseTags(options);
     const attributes = parseAttributes(options);
 
-    const rulesOrigin = await initRules(iacOrgSettings, options);
+    // TODO: Change to real values
+    const policy = undefined;
+    const rulesOrigin = RulesOrigin.Internal;
+    const allFailedFiles = [];
 
-    const policy = await findAndLoadPolicy(pathToScan, 'iac', options);
+    const regulaResults = await execute('play-with-regula', [pathToScan]);
 
-    const isTFVarSupportEnabled = (
-      await isFeatureFlagSupportedForOrg(
-        'iacTerraformVarSupport',
-        iacOrgSettings.meta.org,
-      )
-    ).ok;
+    const regulaResultsJson: RegulaOutput = JSON.parse(regulaResults);
 
-    let allParsedFiles: IacFileParsed[] = [],
-      allFailedFiles: IacFileParseFailure[] = [];
-    const allDirectories = getAllDirectoriesForPath(
-      pathToScan,
-      options.detectionDepth,
-    );
+    const scannedFiles = formatRegulaResults(regulaResultsJson);
 
-    // we load and parse files directory by directory
-    // because we need all files in the same directory to share the same variable context for Terraform
-    for (const currentDirectory of allDirectories) {
-      const filePathsInDirectory = getFilesForDirectory(
-        pathToScan,
-        currentDirectory,
-      );
-      const filesToParse = await loadContentForFiles(filePathsInDirectory);
-      const { parsedFiles, failedFiles } = await parseFiles(
-        filesToParse,
-        options,
-        isTFVarSupportEnabled,
-      );
-      allParsedFiles = allParsedFiles.concat(parsedFiles);
-      allFailedFiles = allFailedFiles.concat(failedFiles);
-    }
-
-    // if none of the files were parsed then either we didn't have any IaC files
-    // or there was only one file passed via the CLI and it failed parsing
-    if (allParsedFiles.length === 0) {
-      if (allFailedFiles.length === 1) {
-        throw allFailedFiles[0].err;
-      } else {
-        throw new NoFilesToScanError();
-      }
-    }
-
-    // Duplicate all the files and run them through the custom engine.
-    if (rulesOrigin !== RulesOrigin.Internal) {
-      allParsedFiles.push(
-        ...allParsedFiles.map((file) => ({
-          ...file,
-          engineType: EngineType.Custom,
-        })),
-      );
-    }
-
-    // TODO: decide if this should go into scanFiles or stay here
-    const scannedFiles = await scanFiles(allParsedFiles);
     const resultsWithCustomSeverities = await applyCustomSeverities(
       scannedFiles,
       iacOrgSettings.customPolicies,
