@@ -14,7 +14,7 @@ import {
   dockerRemediationForDisplay,
   formatTestMeta,
 } from '../../../lib/formatters';
-import { getIacDisplayedOutput } from '../../../lib/formatters/iac-output';
+import { getIacDisplayedOutput } from '../../../lib/formatters/iac-output/v1';
 import {
   IacProjectType,
   IacProjectTypes,
@@ -120,7 +120,6 @@ export function displayResult(
       testedInfoText,
       meta,
       prefix,
-      options.isNewIacOutputSupported,
     );
   }
 

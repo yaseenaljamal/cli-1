@@ -55,6 +55,7 @@ import { isIacShareResultsOptions } from './iac-local-execution/assert-iac-optio
 import { assertIaCOptionsFlags } from './iac-local-execution/assert-iac-options-flag';
 import { hasFeatureFlag } from '../../../lib/feature-flags';
 import { formatIacTestSummary } from '../../../lib/formatters/iac-output';
+import { getIacDisplayedOutput } from '../../../lib/formatters/iac-output/v2';
 
 const debug = Debug('snyk-test');
 const SEPARATOR = '\n-------------------------------------------------------\n';
@@ -249,18 +250,18 @@ export default async function test(
     throw err;
   }
 
-  let response = results
-    .map((result, i) => {
-      return displayResult(
-        results[i] as LegacyVulnApiResult,
-        {
-          ...resultOptions[i],
-          isNewIacOutputSupported,
-        },
-        result.foundProjectCount,
-      );
-    })
-    .join(`\n${SEPARATOR}`);
+  let response =
+    isNewIacOutputSupported && !notSuccess
+      ? getIacDisplayedOutput(results)
+      : results
+          .map((result, i) => {
+            return displayResult(
+              results[i] as LegacyVulnApiResult,
+              { ...resultOptions[i], isNewIacOutputSupported },
+              result.foundProjectCount,
+            );
+          })
+          .join(`\n${SEPARATOR}`);
 
   if (notSuccess) {
     debug(`Failed to test ${errorResults.length} projects, errors:`);

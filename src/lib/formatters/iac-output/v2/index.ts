@@ -1,81 +1,55 @@
 import chalk from 'chalk';
-import { icon } from '../../../theme';
 import * as Debug from 'debug';
 import * as pathLib from 'path';
+import { EOL } from 'os';
 
-import {
-  IacTestResponse,
-  AnnotatedIacIssue,
-} from '../../../../lib/snyk-test/iac-test-result';
-import { printPath } from '../../remediation-based-format-issues';
-import { titleCaseText } from '../../legacy-format-issue';
-import { colorTextBySeverity } from '../../../../lib/snyk-test/common';
 import { IacFileInDirectory } from '../../../../lib/types';
-import { getSeverityValue } from '../../get-severity-value';
+import { FormattedResult } from '../../../../cli/commands/test/iac-local-execution/types';
+import { FormattedIssue } from './types';
+import { formatScanResultsNewOutput } from './formatters';
+import { severityColor } from './color-utils';
+import { capitalize } from 'lodash';
 
 export { formatIacTestSummary } from './test-summary';
 
 const debug = Debug('iac-output');
 
-function formatIacIssue(
-  issue: AnnotatedIacIssue,
-  isNew: boolean,
-  path: string[],
-): string {
-  const newBadge = isNew ? ' (new)' : '';
-  const name = issue.subType ? ` in ${chalk.bold(issue.subType)}` : '';
+export function getIacDisplayedOutput(results: FormattedResult[]): string {
+  const formattedResults = formatScanResultsNewOutput(results);
 
-  let introducedBy = '';
-  if (path) {
-    // In this mode, we show only one path by default, for compactness
-    const pathStr = printPath(path, 0);
-    introducedBy = `\n    introduced by ${pathStr}`;
-  }
+  let output = EOL + chalk.bold.white('Issues') + EOL;
 
-  return (
-    colorTextBySeverity(
-      issue.severity,
-      `  ${icon.ISSUE} ${chalk.bold(issue.title)}${newBadge} [${titleCaseText(
-        issue.severity,
-      )} Severity]`,
-    ) +
-    ` [${issue.id}]` +
-    name +
-    introducedBy +
-    '\n'
-  );
+  ['low', 'medium', 'high', 'critical'].forEach((severity) => {
+    if (formattedResults.results[severity]) {
+      const issues = formattedResults.results[severity];
+      output +=
+        EOL +
+        severityColor[severity](
+          chalk.bold(
+            `${capitalize(severity)} Severity Issues: ${issues.length}`,
+          ),
+        ) +
+        EOL;
+      output += getIssuesOutput(issues);
+
+      debug(
+        `iac display output - ${severity} severity ${issues.length} issues`,
+      );
+    }
+  });
+
+  return output;
 }
 
-export function getIacDisplayedOutput(
-  iacTest: IacTestResponse,
-  prefix: string,
-): string {
-  const issuesTextArray = [
-    chalk.bold.white('\nInfrastructure as code issues:'),
-  ];
+// CFG-1574 will continue the work on this function
+function getIssuesOutput(issues: FormattedIssue[]) {
+  let output = '';
 
-  const NotNew = false;
+  issues.forEach((issue) => {
+    output += chalk.white(`${issue.policyMetadata.title}`) + EOL;
+  });
 
-  const issues: AnnotatedIacIssue[] = iacTest.result.cloudConfigResults;
-  debug(`iac display output - ${issues.length} issues`);
-
-  issues
-    .sort((a, b) => getSeverityValue(b.severity) - getSeverityValue(a.severity))
-    .forEach((issue) => {
-      issuesTextArray.push(
-        formatIacIssue(issue, NotNew, issue.cloudConfigPath),
-      );
-    });
-
-  const issuesInfoOutput: string[] = [];
-  debug(`Iac display output - ${issuesTextArray.length} issues text`);
-  if (issuesTextArray.length > 0) {
-    issuesInfoOutput.push(issuesTextArray.join('\n'));
-  }
-
-  const body = issuesInfoOutput.join('\n\n');
-
-  return prefix + body;
+  return output;
 }
 
 export function getIacDisplayErrorFileOutput(
