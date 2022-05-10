@@ -79,7 +79,7 @@ async function runEnvSnykIacTest(executable: string, ...args: MethodArgs) {
     ),
   });
 
-  const spawned = spawnSync(executable, {
+  const spawned = spawnSync(executable, args as string[], {
     stdio: ['ignore', 'inherit', 'inherit'],
     env,
   });
