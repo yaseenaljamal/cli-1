@@ -11,19 +11,33 @@ import * as fs from 'fs';
 import { getLocalCachePath } from './local-cache';
 import { CustomError } from '../../../../../lib/errors';
 import { getErrorStringCode } from './error-utils';
+import { IacFileInDirectory } from '../../../../../lib/types';
+import { SEVERITIES } from '../../../../../lib/snyk-test/common';
 
 export async function scanFiles(
   parsedFiles: Array<IacFileParsed>,
-): Promise<IacFileScanResult[]> {
+): Promise<{
+  scannedFiles: IacFileScanResult[];
+  failedScans: IacFileInDirectory[];
+}> {
   // TODO: gracefully handle failed scans
-  const scanResults: IacFileScanResult[] = [];
+  const scannedFiles: IacFileScanResult[] = [];
+  let failedScans: IacFileInDirectory[] = [];
   for (const parsedFile of parsedFiles) {
     const policyEngine = await getPolicyEngine(parsedFile.engineType);
     const result = policyEngine.scanFile(parsedFile);
-    scanResults.push(result);
+    if (parsedFile.engineType === EngineType.Custom) {
+      const { validatedResult, invalidIssues } = validateResultFromCustomRules(
+        result,
+      );
+      scannedFiles.push(validatedResult);
+      failedScans = [...failedScans, ...invalidIssues];
+    } else {
+      scannedFiles.push(result);
+    }
   }
 
-  return scanResults;
+  return { scannedFiles, failedScans };
 }
 
 async function getPolicyEngine(engineType: EngineType): Promise<PolicyEngine> {
@@ -32,6 +46,52 @@ async function getPolicyEngine(engineType: EngineType): Promise<PolicyEngine> {
   }
   policyEngineCache[engineType] = await buildPolicyEngine(engineType);
   return policyEngineCache[engineType]!;
+}
+
+export function validateResultFromCustomRules(
+  result: IacFileScanResult,
+): {
+  validatedResult: IacFileScanResult;
+  invalidIssues: IacFileInDirectory[];
+} {
+  const invalidIssues: IacFileInDirectory[] = [];
+  const filteredViolatedPolicies: PolicyMetadata[] = [];
+  for (const violatedPolicy of result.violatedPolicies) {
+    let failureReason = '';
+    const invalidSeverity = !SEVERITIES.find(
+      (s) => s.verboseName === violatedPolicy.severity,
+    );
+    if (invalidSeverity) {
+      failureReason = `Invalid severity value configured for custom rule ${violatedPolicy.publicId}. Please make sure it's one of: low, medium, high, and critical.`;
+    }
+    const invalidLowercasePublicId =
+      violatedPolicy.publicId !== violatedPolicy.publicId.toUpperCase();
+    if (invalidLowercasePublicId) {
+      failureReason = `Invalid non-uppercase publicId configured for custom rule ${violatedPolicy.publicId}. Please make sure all characters are capitalised.`;
+    }
+    const invalidSnykPublicId = violatedPolicy.publicId.startsWith('SNYK-CC-');
+    if (invalidSnykPublicId) {
+      failureReason = `Invalid publicId configured for custom rule ${violatedPolicy.publicId}. Please make sure it doesn't start with SNYK-CC-.`;
+    }
+
+    if (failureReason) {
+      invalidIssues.push({
+        filePath: result.filePath,
+        fileType: result.fileType,
+        failureReason,
+      });
+    } else {
+      filteredViolatedPolicies.push(violatedPolicy);
+    }
+  }
+
+  return {
+    validatedResult: {
+      ...result,
+      violatedPolicies: filteredViolatedPolicies,
+    },
+    invalidIssues,
+  };
 }
 
 // used in tests only
