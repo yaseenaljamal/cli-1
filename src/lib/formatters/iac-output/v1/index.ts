@@ -14,13 +14,14 @@ import { printPath } from '../../remediation-based-format-issues';
 import { titleCaseText } from '../../legacy-format-issue';
 import * as sarif from 'sarif';
 import { colorTextBySeverity } from '../../../../lib/snyk-test/common';
-import { IacFileInDirectory, IacOutputMeta } from '../../../../lib/types';
+import { IacOutputMeta } from '../../../../lib/types';
 import { isLocalFolder } from '../../../../lib/detect';
 import { getSeverityValue } from '../../get-severity-value';
 import { getIssueLevel } from '../../sarif-output';
 import { getVersion } from '../../../version';
 import config from '../../../config';
 import { getRepositoryRoot } from '../../../iac/git';
+import { IacScanFailure } from '../../../../cli/commands/test/iac/local-execution/types';
 const debug = Debug('iac-output');
 
 function formatIacIssue(
@@ -92,16 +93,16 @@ export function getIacDisplayedOutput(
 }
 
 export function getIacDisplayErrorFileOutput(
-  iacFileResult: IacFileInDirectory,
+  iacScanFailure: IacScanFailure,
 ): string {
-  const fileName = pathLib.basename(iacFileResult.filePath);
+  const fileName = pathLib.basename(iacScanFailure.filePath);
   return `
 
 -------------------------------------------------------
 
 Testing ${fileName}...
 
-${iacFileResult.failureReason}`;
+${iacScanFailure.failureReason}`;
 }
 
 export function capitalizePackageManager(type: string | undefined) {

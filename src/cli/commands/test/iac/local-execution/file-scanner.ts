@@ -3,6 +3,7 @@ import {
   IaCErrorCodes,
   IacFileParsed,
   IacFileScanResult,
+  IacScanFailure,
   OpaWasmInstance,
   PolicyMetadata,
 } from './types';
@@ -11,18 +12,17 @@ import * as fs from 'fs';
 import { getLocalCachePath } from './local-cache';
 import { CustomError } from '../../../../../lib/errors';
 import { getErrorStringCode } from './error-utils';
-import { IacFileInDirectory } from '../../../../../lib/types';
 import { SEVERITIES } from '../../../../../lib/snyk-test/common';
 
 export async function scanFiles(
   parsedFiles: Array<IacFileParsed>,
 ): Promise<{
   scannedFiles: IacFileScanResult[];
-  failedScans: IacFileInDirectory[];
+  failedScans: IacScanFailure[];
 }> {
   // TODO: gracefully handle failed scans
   const scannedFiles: IacFileScanResult[] = [];
-  let failedScans: IacFileInDirectory[] = [];
+  let failedScans: IacScanFailure[] = [];
   for (const parsedFile of parsedFiles) {
     const policyEngine = await getPolicyEngine(parsedFile.engineType);
     const result = policyEngine.scanFile(parsedFile);
@@ -52,9 +52,9 @@ export function validateResultFromCustomRules(
   result: IacFileScanResult,
 ): {
   validatedResult: IacFileScanResult;
-  invalidIssues: IacFileInDirectory[];
+  invalidIssues: IacScanFailure[];
 } {
-  const invalidIssues: IacFileInDirectory[] = [];
+  const invalidIssues: IacScanFailure[] = [];
   const filteredViolatedPolicies: PolicyMetadata[] = [];
   for (const violatedPolicy of result.violatedPolicies) {
     let failureReason = '';

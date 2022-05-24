@@ -4,11 +4,11 @@ import * as pathLib from 'path';
 import { formatIacTestSummary } from '../../../../../../../src/lib/formatters/iac-output';
 import { colors } from '../../../../../../../src/lib/formatters/iac-output/v2/utils';
 import { IacTestResponse } from '../../../../../../../src/lib/snyk-test/iac-test-result';
-import { IacFileInDirectory } from '../../../../../../../src/lib/types';
+import { IacScanFailure } from '../../../../../../../src/cli/commands/test/iac/local-execution/types';
 
 describe('formatIacTestSummary', () => {
   let resultFixtures: IacTestResponse[];
-  let scanFailureFixtures: IacFileInDirectory[];
+  let scanFailureFixtures: IacScanFailure[];
 
   beforeAll(async () => {
     resultFixtures = JSON.parse(

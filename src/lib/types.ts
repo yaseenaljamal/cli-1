@@ -1,8 +1,9 @@
 import { SupportedPackageManagers } from './package-managers';
-import { IacProjectTypes, IacFileTypes } from './iac/constants';
+import { IacProjectTypes } from './iac/constants';
 import { legacyCommon as legacyApi } from '@snyk/cli-interface';
 import { SEVERITY } from './snyk-test/legacy';
 import { FailOn } from './snyk-test/common';
+import { IacScanFailure } from '../cli/commands/test/iac/local-execution/types';
 
 export interface DepDict {
   [name: string]: DepTree;
@@ -27,7 +28,7 @@ export interface TestOptions {
   testDepGraphDockerEndpoint?: string | null;
   isDockerUser?: boolean;
   /** @deprecated Only used by the legacy `iac test` flow remove once local exec path is GA */
-  iacDirFiles?: IacFileInDirectory[];
+  iacDirFiles?: IacScanFailure[];
 }
 
 export interface Contributor {
@@ -255,13 +256,6 @@ export enum SupportedCliCommands {
   describe = 'describe',
   'update-exclude-policy' = 'update-exclude-policy',
   report = 'report',
-}
-
-export interface IacFileInDirectory {
-  filePath: string;
-  fileType: IacFileTypes;
-  projectType?: IacProjectTypes;
-  failureReason?: string;
 }
 
 export interface IacOutputMeta {

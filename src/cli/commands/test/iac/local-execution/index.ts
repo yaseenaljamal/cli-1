@@ -159,7 +159,7 @@ export function removeFileContent({
   fileType,
   failureReason,
   projectType,
-}: IacFileParsed | IacFileParseFailure): SafeAnalyticsOutput {
+}: IacFileParseFailure): SafeAnalyticsOutput {
   return {
     filePath,
     fileType,

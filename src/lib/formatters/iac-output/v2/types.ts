@@ -1,12 +1,13 @@
 import { IacTestResponse } from '../../../snyk-test/iac-test-result';
-import { IacFileInDirectory } from '../../../types';
+import { IacScanFailure } from '../../../../cli/commands/test/iac/local-execution/types';
 
 export interface IacTestData {
   ignoreCount: number;
   results: IacTestResponse[];
-  failures?: IacFileInDirectory[];
+  failures?: IacScanFailure[];
 }
 
+// TODO replace with IacScanFailure
 export type IaCTestFailure = {
   filePath: string;
   failureReason: string | undefined;

@@ -4,12 +4,7 @@ import * as cloneDeep from 'lodash.clonedeep';
 import * as assign from 'lodash.assign';
 import chalk from 'chalk';
 
-import {
-  IacFileInDirectory,
-  IacOutputMeta,
-  Options,
-  TestOptions,
-} from '../../../../lib/types';
+import { IacOutputMeta, Options, TestOptions } from '../../../../lib/types';
 import { MethodArgs } from '../../../args';
 import { TestCommandResult } from '../../types';
 import {
@@ -59,6 +54,7 @@ import config from '../../../../lib/config';
 import { UnsupportedEntitlementError } from '../../../../lib/errors/unsupported-entitlement-error';
 import * as ora from 'ora';
 import { IaCTestFailure } from '../../../../lib/formatters/iac-output/v2/types';
+import { IacScanFailure } from './local-execution/types';
 
 const debug = Debug('snyk-test');
 const SEPARATOR = '\n-------------------------------------------------------\n';
@@ -82,7 +78,7 @@ export default async function(
   const results = [] as any[];
 
   // Holds an array of scanned file metadata for output.
-  let iacScanFailures: IacFileInDirectory[] = [];
+  let iacScanFailures: IacScanFailure[] = [];
   let iacIgnoredIssuesCount = 0;
   let iacOutputMeta: IacOutputMeta | undefined;
 
@@ -279,10 +275,13 @@ export default async function(
     }));
 
     const allTestFailures: IaCTestFailure[] = iacScanFailures
-      .map((f) => ({
-        filePath: f.filePath,
-        failureReason: f.failureReason,
-      }))
+      .map(
+        (f) =>
+          ({
+            filePath: f.filePath,
+            failureReason: f.failureReason,
+          } as IaCTestFailure),
+      )
       .concat(thrownErrors);
 
     response += isNewIacOutputSupported

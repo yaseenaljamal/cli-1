@@ -1,8 +1,8 @@
 import { EOL } from 'os';
 
-import { IacFileInDirectory } from '../../../../types';
 import { colors, contentPadding } from '../utils';
 import { IaCTestFailure } from '../types';
+import { IacScanFailure } from '../../../../../cli/commands/test/iac/local-execution/types';
 
 export function formatIacTestFailures(testFailures: IaCTestFailure[]): string {
   const sectionComponents: string[] = [];
@@ -17,7 +17,7 @@ export function formatIacTestFailures(testFailures: IaCTestFailure[]): string {
 }
 
 interface TestFailuresByFailureReason {
-  [reason: string]: IacFileInDirectory[];
+  [reason: string]: IacScanFailure[];
 }
 
 function groupTestFailuresByFailureReason(
@@ -48,7 +48,7 @@ function formatFailuresList(testFailures: IaCTestFailure[]) {
 
 function formatFailure(
   failureReason: string,
-  testFailures: IacFileInDirectory[],
+  testFailures: IacScanFailure[],
 ): string {
   const pathPrefix = contentPadding + 'Path: ';
   const pathLeftPadding = ' '.repeat(pathPrefix.length);

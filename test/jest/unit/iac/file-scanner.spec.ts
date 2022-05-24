@@ -178,7 +178,7 @@ describe('validateResultFromCustomRules', () => {
       expect.arrayContaining([
         expect.objectContaining({
           failureReason:
-            'Invalid severity value configured for custom rule CUSTOM-RULE-INVALID-SEVERITY. Please make sure it\'s one of: low, medium, high, and critical.',
+            "Invalid severity value configured for custom rule CUSTOM-RULE-INVALID-SEVERITY. Please make sure it's one of: low, medium, high, and critical.",
         }),
       ]),
     );
@@ -220,7 +220,7 @@ describe('validateResultFromCustomRules', () => {
       expect.arrayContaining([
         expect.objectContaining({
           failureReason:
-            'Invalid publicId configured for custom rule SNYK-CC-CUSTOM-RULE-INVALID. Please make sure it doesn\'t start with SNYK-CC-.',
+            "Invalid publicId configured for custom rule SNYK-CC-CUSTOM-RULE-INVALID. Please make sure it doesn't start with SNYK-CC-.",
         }),
       ]),
     );

@@ -9,15 +9,13 @@ import {
   IgnoreSettings,
   TestResult,
 } from '../../../../../lib/snyk-test/legacy';
-import {
-  IacFileInDirectory,
-  Options,
-  TestOptions,
-  PolicyOptions,
-} from '../../../../../lib/types';
+import { Options, TestOptions, PolicyOptions } from '../../../../../lib/types';
 
-export interface IacFileData extends IacFileInDirectory {
+export interface IacFileData {
+  filePath: string;
+  fileType: IacFileTypes;
   fileContent: string;
+  projectType?: IacProjectTypes;
 }
 
 enum ValidFileType {
@@ -40,10 +38,16 @@ export interface IacFileParsed extends IacFileData {
   docId?: number;
 }
 
-export interface IacFileParseFailure extends IacFileData {
-  jsonContent: null;
-  engineType: null;
+export interface IacScanFailure {
+  filePath: string;
+  fileType: IacFileTypes;
   failureReason: string;
+}
+
+export interface IacFileParseFailure extends IacScanFailure {
+  jsonContent: null;
+  projectType?: IacProjectType;
+  engineType: null;
   err: Error;
 }
 
@@ -128,10 +132,9 @@ export interface OpaWasmInstance {
   setData: (data: Record<string, any>) => void;
 }
 
-export type SafeAnalyticsOutput = Omit<
-  IacFileParsed | IacFileParseFailure,
-  'fileContent' | 'jsonContent' | 'engineType'
->;
+export type SafeAnalyticsOutput = IacScanFailure & {
+  projectType?: IacProjectType;
+};
 
 export enum EngineType {
   Kubernetes,
@@ -352,7 +355,7 @@ export enum IaCErrorCodes {
 
 export interface TestReturnValue {
   results: TestResult | TestResult[];
-  failures?: IacFileInDirectory[];
+  failures?: IacScanFailure[];
   ignoreCount: number;
 }
 
