@@ -1,4 +1,3 @@
-import { execSync } from 'child_process';
 import { startMockServer } from './helpers';
 
 jest.setTimeout(50000);
@@ -114,9 +113,16 @@ describe('iac test --rules', () => {
   });
 });
 
-// skipping this as we have many flakes recently
-// to be re-written in CFG-1847
-describe.skip('custom rules pull from a remote OCI registry', () => {
+describe('custom rules pull from a remote OCI registry', () => {
+  const registryBasePath = 'https://localhost:1' // from the local fake server which is at port 1 and is using https
+  const repo = 'fake-repo-test/bundle'
+  const tag = 'tag'
+  const overrides = {
+    SNYK_CFG_OCI_REGISTRY_URL: `${registryBasePath}/${repo}:${tag}`,
+    SNYK_CFG_OCI_REGISTRY_USERNAME: 'test',
+    SNYK_CFG_OCI_REGISTRY_PASSWORD: 'test',
+  };
+
   let run: (
     cmd: string,
     overrides?: Record<string, string>,
@@ -124,190 +130,38 @@ describe.skip('custom rules pull from a remote OCI registry', () => {
   let teardown: () => Promise<unknown>;
 
   beforeAll(async () => {
-    const result = await startMockServer();
+    // be careful about starting a new server at the beginning of each test with a beforeEach
+    // otherwise the server doesn't actually close so node might run out of file descriptors
+    const result = await startMockServer(repo, tag);
     run = result.run;
     teardown = result.teardown;
   });
 
   afterAll(async () => await teardown());
 
-  const getOciElasticRegistryPassword = () => {
-    const awsCommand =
-      process.platform === 'win32'
-        ? 'aws ecr get-login --region eu-west-1'
-        : 'aws ecr get-login-password --region eu-west-1';
-    let result = execSync(awsCommand, {
-      env: {
-        AWS_ACCESS_KEY_ID: process.env.OCI_ELASTIC_REGISTRY_ACCESS_KEY_ID,
-        AWS_SECRET_ACCESS_KEY:
-          process.env.OCI_ELASTIC_REGISTRY_SECRET_ACCESS_KEY,
-      },
-    }).toString();
-    if (process.platform === 'win32') {
-      // the command has a "docker login -u AWS -p " prefix
-      const prefix = 'docker login -u AWS -p';
-      // and a " -e none <url>" postifx
-      const postfix = ` -e none https://${
-        new URL(process.env.OCI_ELASTIC_REGISTRY_URL || '').hostname
-      }`;
-      result = result.substring(
-        prefix.length + 1,
-        result.length - postfix.length - 2,
-      );
-    }
-    return result;
-  };
+  it('should return a success exit code', async () => {
+    const { stdout, exitCode } = await run(
+      `snyk iac test ./iac/terraform/sg_open_ssh.tf`,
+        overrides,
+    );
 
-  const cases = [
-    [
-      'Docker',
-      process.env.OCI_DOCKER_REGISTRY_URL,
-      process.env.OCI_DOCKER_REGISTRY_USERNAME,
-      process.env.OCI_DOCKER_REGISTRY_PASSWORD,
-    ],
-    [
-      'Azure',
-      process.env.OCI_AZURE_REGISTRY_URL,
-      process.env.OCI_AZURE_REGISTRY_USERNAME,
-      process.env.OCI_AZURE_REGISTRY_PASSWORD,
-    ],
-    [
-      'Harbor',
-      process.env.OCI_HARBOR_REGISTRY_URL,
-      process.env.OCI_HARBOR_REGISTRY_USERNAME,
-      process.env.OCI_HARBOR_REGISTRY_PASSWORD,
-    ],
-    [
-      'Elastic',
-      process.env.OCI_ELASTIC_REGISTRY_URL,
-      'AWS',
-      getOciElasticRegistryPassword(),
-    ],
-    [
-      'GitHub',
-      process.env.OCI_GITHUB_REGISTRY_URL,
-      process.env.OCI_GITHUB_REGISTRY_USERNAME,
-      process.env.OCI_GITHUB_REGISTRY_PASSWORD,
-    ],
-    // [
-    //   'GCR',
-    //   process.env.OCI_GCR_REGISTRY_URL,
-    //   process.env.OCI_GCR_REGISTRY_USERNAME,
-    //   process.env.OCI_GCR_REGISTRY_PASSWORD,
-    // ],
-  ];
-
-  describe.each(cases)(
-    'given %p as a registry and correct credentials',
-    (
-      SNYK_CFG_OCI_REGISTRY_NAME,
-      SNYK_CFG_OCI_REGISTRY_URL,
-      SNYK_CFG_OCI_REGISTRY_USERNAME,
-      SNYK_CFG_OCI_REGISTRY_PASSWORD,
-    ) => {
-      it('should return a success exit code', async () => {
-        const { stdout, exitCode } = await run(
-          `snyk iac test ./iac/terraform/sg_open_ssh.tf`,
-          {
-            SNYK_CFG_OCI_REGISTRY_URL: SNYK_CFG_OCI_REGISTRY_URL as string,
-            SNYK_CFG_OCI_REGISTRY_USERNAME: SNYK_CFG_OCI_REGISTRY_USERNAME as string,
-            SNYK_CFG_OCI_REGISTRY_PASSWORD: SNYK_CFG_OCI_REGISTRY_PASSWORD as string,
-          },
-        );
-        expect(SNYK_CFG_OCI_REGISTRY_URL).toBeDefined();
-        expect(SNYK_CFG_OCI_REGISTRY_USERNAME).toBeDefined();
-        expect(SNYK_CFG_OCI_REGISTRY_PASSWORD).toBeDefined();
-
-        expect(stdout).toContain(
-          'Using custom rules to generate misconfigurations.',
-        );
-        expect(stdout).toContain('Testing ./iac/terraform/sg_open_ssh.tf');
-        expect(stdout).toContain('Infrastructure as code issues:');
-        expect(stdout).toContain('Missing tags');
-        expect(stdout).toContain('CUSTOM-1');
-        expect(stdout).toContain(
-          'introduced by input > resource > aws_security_group[allow_ssh] > tags',
-        );
-        expect(exitCode).toBe(1);
-      });
-
-      describe.each([
-        ['--report flag', 'test --report'],
-        ['report command', 'report'],
-      ])('when used with the %s', (_, testedCommand) => {
-        it('should resolve successfully', async () => {
-          const { exitCode, stderr } = await run(
-            `snyk iac ${testedCommand} ./iac/terraform/sg_open_ssh.tf`,
-            {
-              SNYK_CFG_OCI_REGISTRY_URL: SNYK_CFG_OCI_REGISTRY_URL as string,
-              SNYK_CFG_OCI_REGISTRY_USERNAME: SNYK_CFG_OCI_REGISTRY_USERNAME as string,
-              SNYK_CFG_OCI_REGISTRY_PASSWORD: SNYK_CFG_OCI_REGISTRY_PASSWORD as string,
-            },
-          );
-          expect(stderr).toContain('');
-          expect(exitCode).toEqual(1);
-        });
-
-        it('should display a message informing of the application of custom rules', async () => {
-          const { stdout } = await run(
-            `snyk iac ${testedCommand} ./iac/terraform/sg_open_ssh.tf`,
-            {
-              SNYK_CFG_OCI_REGISTRY_URL: SNYK_CFG_OCI_REGISTRY_URL as string,
-              SNYK_CFG_OCI_REGISTRY_USERNAME: SNYK_CFG_OCI_REGISTRY_USERNAME as string,
-              SNYK_CFG_OCI_REGISTRY_PASSWORD: SNYK_CFG_OCI_REGISTRY_PASSWORD as string,
-            },
-          );
-
-          expect(stdout).toContain(
-            'Using custom rules to generate misconfigurations.',
-          );
-        });
-
-        it('should display a warning message for custom rules not being available on the platform', async () => {
-          const { stdout } = await run(
-            `snyk iac ${testedCommand} ./iac/terraform/sg_open_ssh.tf`,
-            {
-              SNYK_CFG_OCI_REGISTRY_URL: SNYK_CFG_OCI_REGISTRY_URL as string,
-              SNYK_CFG_OCI_REGISTRY_USERNAME: SNYK_CFG_OCI_REGISTRY_USERNAME as string,
-              SNYK_CFG_OCI_REGISTRY_PASSWORD: SNYK_CFG_OCI_REGISTRY_PASSWORD as string,
-            },
-          );
-
-          expect(stdout).toContain(
-            "Please note that your custom rules will not be sent to the Snyk platform, and will not be available on the project's page.",
-          );
-        });
-
-        describe.each(['--json', '--sarif'])(
-          'when the %s flag is provided',
-          (testedFormatFlag) => {
-            it('should not display the warning message for the custom rules not being available on the platform', async () => {
-              const { stdout } = await run(
-                `snyk iac ${testedCommand} ./iac/terraform/sg_open_ssh.tf ${testedFormatFlag}`,
-                {
-                  SNYK_CFG_OCI_REGISTRY_URL: SNYK_CFG_OCI_REGISTRY_URL as string,
-                  SNYK_CFG_OCI_REGISTRY_USERNAME: SNYK_CFG_OCI_REGISTRY_USERNAME as string,
-                  SNYK_CFG_OCI_REGISTRY_PASSWORD: SNYK_CFG_OCI_REGISTRY_PASSWORD as string,
-                },
-              );
-
-              expect(stdout).not.toContain(
-                "Please note that your custom rules will not be sent to the Snyk platform, and will not be available on the project's page.",
-              );
-            });
-          },
-        );
-      });
-    },
-  );
+    expect(stdout).toContain(
+      'Using custom rules to generate misconfigurations.',
+    );
+    expect(stdout).toContain('Testing ./iac/terraform/sg_open_ssh.tf');
+    expect(stdout).toContain('Infrastructure as code issues:');
+    expect(stdout).toContain('Missing tags');
+    expect(stdout).toContain('CUSTOM-1');
+    expect(stdout).toContain(
+      'introduced by input > resource > aws_security_group[allow_ssh] > tags',
+    );
+    expect(exitCode).toBe(1);
+  });
 
   it('presents an error message when there is an issue downloading the remote rules', async () => {
     const { stdout, exitCode } = await run(
       `snyk iac test ./iac/terraform/sg_open_ssh.tf`,
-      {
-        SNYK_CFG_OCI_REGISTRY_URL:
-          'https://registry-1.docker.io/fake-repo-test/bundle:latest',
-      },
+        overrides,
     );
 
     expect(stdout).toContain(
@@ -319,10 +173,7 @@ describe.skip('custom rules pull from a remote OCI registry', () => {
   it('presents an error message when there is a local and remote rules conflict', async () => {
     const { stdout, exitCode } = await run(
       `snyk iac test ./iac/terraform/sg_open_ssh.tf --rules=bundle.tar.gz`,
-      {
-        SNYK_CFG_OCI_REGISTRY_URL:
-          'https://registry-1.docker.io/fake-test-repo/bundle:latest',
-      },
+        overrides,
     );
 
     expect(stdout).toContain(
@@ -334,13 +185,7 @@ describe.skip('custom rules pull from a remote OCI registry', () => {
   it('presents an error message when the user is not entitled to custom-rules', async () => {
     const { stdout, exitCode } = await run(
       `snyk iac test --org=no-custom-rules-entitlements ./iac/terraform/sg_open_ssh.tf`,
-      {
-        SNYK_CFG_OCI_REGISTRY_URL: process.env.OCI_DOCKER_REGISTRY_URL!,
-        SNYK_CFG_OCI_REGISTRY_USERNAME: process.env
-          .OCI_DOCKER_REGISTRY_USERNAME!,
-        SNYK_CFG_OCI_REGISTRY_PASSWORD: process.env
-          .OCI_DOCKER_REGISTRY_PASSWORD!,
-      },
+        overrides,
     );
 
     expect(stdout).toContain(
