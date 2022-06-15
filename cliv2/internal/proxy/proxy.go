@@ -75,7 +75,7 @@ func NewWrapperProxy(insecureSkipVerify bool, cacheDirectory string, cliVersion 
 	}
 
 	proxy.Logger = debugLogger
-	proxy.OnRequest().HandleConnect(goproxy.AlwaysMitm)
+	proxy.OnRequest().HandleConnect(&AlwaysMitmWrapper{DebugLogger: debugLogger})
 	proxy.OnRequest().DoFunc(func(r *http.Request, ctx *goproxy.ProxyCtx) (*http.Request, *http.Response) {
 
 		// Manipulate Header (replace x-snyk-cli-version)
