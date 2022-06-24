@@ -6,6 +6,8 @@ import { pluckPolicies } from '.';
 import { SupportedPackageManagers } from '../package-managers';
 import { PackageJson, PolicyOptions } from '../types';
 import * as analytics from '../analytics';
+import * as fs from 'fs';
+import * as path from 'path';
 
 const debug = debugModule('snyk');
 
@@ -17,11 +19,21 @@ export async function findAndLoadPolicy(
   scannedProjectFolder?: string,
 ): Promise<Policy | undefined> {
   const isDocker = scanType === 'docker';
+
+  const rootPolicyExists = fs.existsSync(path.join(root, '.snyk'));
+  const projPolicyExists =
+    scannedProjectFolder &&
+    fs.existsSync(path.join(scannedProjectFolder, '.snyk'));
+
   const isNodeProject = ['npm', 'yarn'].includes(scanType);
   // monitor
-  let policyLocations: string[] = [
-    options['policy-path'] || scannedProjectFolder || root,
-  ];
+
+  let policyLocations: string[] = [];
+  if (options['policy-path']) policyLocations.push(options['policy-path']);
+  else if (scannedProjectFolder && projPolicyExists)
+    policyLocations.push(scannedProjectFolder);
+  else if (rootPolicyExists) policyLocations.push(root);
+
   if (isDocker) {
     policyLocations = policyLocations.filter((loc) => loc !== root);
   } else if (isNodeProject) {
