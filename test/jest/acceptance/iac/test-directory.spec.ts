@@ -175,7 +175,7 @@ describe('Directory scan', () => {
 
     // document the existing bug to fix, when one path fails entirely, sarif fails with:
     // An unknown error occurred. Please run with `-d` and include full trace when reporting to Snyk
-    it.skip('outputs issues and errors when one of the paths fails, with --sarif flag', async () => {
+    it('outputs issues and errors when one of the paths fails, with --sarif flag', async () => {
       const { stdout, exitCode } = await run(
         `snyk iac test ./iac/arm non-existing-dir --sarif`,
       );

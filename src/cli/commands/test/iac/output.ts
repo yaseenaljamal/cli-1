@@ -130,7 +130,15 @@ export function buildOutput({
     stringifiedSarifData,
   } = extractDataToSendFromResults(results, mappedResults, options);
 
-  if (options.json || options.sarif) {
+  if (options.sarif) {
+    return TestCommandResult.createJsonTestCommandResult(
+      stringifiedData,
+      stringifiedJsonData,
+      stringifiedSarifData,
+    );
+  }
+
+  if (options.json) {
     // if all results are ok (.ok == true)
     if (mappedResults.every((res) => res.ok)) {
       return TestCommandResult.createJsonTestCommandResult(
@@ -212,6 +220,7 @@ export function buildOutput({
     if (hasErrors && !isPartialSuccess) {
       response += chalk.bold.red(summaryMessage);
 
+      console.log('---HEREEE');
       // take the code of the first problem to go through error
       // translation
       // HACK as there can be different errors, and we pass only the
@@ -282,6 +291,8 @@ export function buildOutput({
     error.userMessage = vulnerableResults[0].userMessage;
     error.jsonStringifiedResults = stringifiedJsonData;
     error.sarifStringifiedResults = stringifiedSarifData;
+    console.log('---here');
+    console.log(error);
     throw error;
   }
 
