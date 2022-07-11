@@ -18,7 +18,7 @@ export async function requestTestPollingToken(
 ): Promise<ResolveAndTestFactsResponse> {
   const payload = {
     method: 'POST',
-    url: `${config.API}/unmanaged/test-dependencies`,
+    url: `http://localhost:8080/rest/unmanaged-ecosystem/test-dependencies`,
     json: true,
     headers: {
       'x-is-ci': isCI(),
@@ -28,9 +28,12 @@ export async function requestTestPollingToken(
       isAsync,
       scanResult,
     },
-    qs: assembleQueryString(options),
+    qs: { version: '2022-05-23~experimental', ...assembleQueryString(options) },
   };
-  return await makeRequest<ResolveAndTestFactsResponse>(payload);
+
+  const result = await makeRequest<ResolveAndTestFactsResponse>(payload);
+
+  return JSON.parse(result.toString());
 }
 
 export async function pollingTestWithTokenUntilDone(
@@ -43,16 +46,22 @@ export async function pollingTestWithTokenUntilDone(
 ): Promise<TestDependenciesResult> {
   const payload = {
     method: 'GET',
-    url: `${config.API}/unmanaged/test-dependencies/${token}`,
+    url: `http://localhost:8080/rest/unmanaged-ecosystem/test-dependencies/${token}`,
     json: true,
     headers: {
       'x-is-ci': isCI(),
       authorization: getAuthHeader(),
     },
-    qs: { ...assembleQueryString(options), type },
+    qs: {
+      ...assembleQueryString(options),
+      type,
+      version: '2022-05-23~experimental',
+    },
   };
 
-  const response = await makeRequest<ResolveAndTestFactsResponse>(payload);
+  let response = await makeRequest<ResolveAndTestFactsResponse>(payload);
+
+  response = JSON.parse(response.toString());
 
   handleProcessingStatus(response);
 
