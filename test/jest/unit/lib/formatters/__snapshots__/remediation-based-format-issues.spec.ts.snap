@@ -3,6 +3,15 @@
 exports[`with license issues 1`] = `
 "
 
+License issues (1 issue):
+
+  ✗ [High] Unknown license
+    [URL] in rack-cache@1.1
+    introduced by:
+    rack-cache@1.1
+    Legal instructions:
+    ○ for LGPL-3.0 license: I am legal license instruction
+
 Issues to fix by upgrading (7 issues):
 
   Upgrade rack@1.6.5 to rack@1.6.11 to fix 1 issue
@@ -50,20 +59,19 @@ Issues to fix by upgrading (7 issues):
     introduced by:
     rack@1.6.5
     rack-cache@1.1 > rack@1.6.5
-    rack-protection@1.5.3 > rack@1.6.5
-
-License issues (1 issue):
-
-  ✗ [High] Unknown license
-    [URL] in rack-cache@1.1
-    introduced by:
-    rack-cache@1.1
-    Legal instructions:
-    ○ for LGPL-3.0 license: I am legal license instruction"
+    rack-protection@1.5.3 > rack@1.6.5"
 `;
 
 exports[`with pins & unfixable & showVulnsPaths = all 1`] = `
 "
+
+Issues with no direct upgrade or patch (1 issue):
+
+  ✗ [Low] Directory Traversal
+    [URL] in django@1.6.1
+    introduced by:
+    django@1.6.1
+    This issue was fixed in versions: 2.2.18, 3.0.12, 3.1.6
 
 Issues to fix by upgrading dependencies (1 issue):
 
@@ -72,15 +80,7 @@ Issues to fix by upgrading dependencies (1 issue):
   ✗ [Medium] Content Spoofing
     [URL] in django@1.6.1
     introduced by:
-    django@1.6.1
-
-Issues with no direct upgrade or patch (1 issue):
-
-  ✗ [Low] Directory Traversal
-    [URL] in django@1.6.1
-    introduced by:
-    django@1.6.1
-    This issue was fixed in versions: 2.2.18, 3.0.12, 3.1.6"
+    django@1.6.1"
 `;
 
 exports[`with reachable info 1`] = `
@@ -99,24 +99,33 @@ Issues to fix by upgrading (1 issue):
 exports[`with showVulnPaths = some 1`] = `
 "
 
+Issues with no direct upgrade or patch (1 issue):
+
+  ✗ [Low] Directory Traversal
+    [URL] in django@1.6.1
+    introduced by django@1.6.1
+    This issue was fixed in versions: 2.2.18, 3.0.12, 3.1.6
+
 Issues to fix by upgrading dependencies (1 issue):
 
   Upgrade django@1.6.1 to django@2.2.18 to fix 1 issue
 
   ✗ [Medium] Content Spoofing
     [URL] in django@1.6.1
-    introduced by django@1.6.1
-
-Issues with no direct upgrade or patch (1 issue):
-
-  ✗ [Low] Directory Traversal
-    [URL] in django@1.6.1
-    introduced by django@1.6.1
-    This issue was fixed in versions: 2.2.18, 3.0.12, 3.1.6"
+    introduced by django@1.6.1"
 `;
 
 exports[`with upgrades & patches 1`] = `
 "
+
+Patchable issues (1 issue):
+
+  Patch available for node-uuid@1.4.0
+
+  ✗ [Low (originally Medium)] Insecure Randomness
+    [URL] in node-uuid@1.4.0
+    introduced by:
+    node-uuid@1.4.0
 
 Issues to fix by upgrading (3 issues):
 
@@ -135,14 +144,5 @@ Issues to fix by upgrading (3 issues):
   ✗ [Low (originally Medium)] Denial of Service (DoS)
     [URL] in qs@0.0.6
     introduced by:
-    qs@0.0.6
-
-Patchable issues (1 issue):
-
-  Patch available for node-uuid@1.4.0
-
-  ✗ [Low (originally Medium)] Insecure Randomness
-    [URL] in node-uuid@1.4.0
-    introduced by:
-    node-uuid@1.4.0"
+    qs@0.0.6"
 `;
