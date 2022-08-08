@@ -42,6 +42,7 @@
     "test": "npm run test:unit && npm run test:acceptance && npm run test:tap",
     "test:unit": "jest --runInBand --testPathPattern '/test(/jest)?/unit/'",
     "test:acceptance": "jest --runInBand --testPathPattern '/test(/jest)?/acceptance/'",
+    "test:acceptance-iac": "jest --runInBand --testPathPattern '/test(/jest)?/acceptance/iac'",
     "test:tap": "tap -Rspec --timeout=300 --node-arg=-r --node-arg=ts-node/register test/tap/*.test.* ",
     "test:smoke": "./scripts/run-smoke-tests-locally.sh"
   },

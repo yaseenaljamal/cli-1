@@ -1,0 +1,72 @@
+name: IaC Smoke Tests
+on: push
+jobs:
+  smoke_test:
+    # The type of runner that the job will run on
+    runs-on: ${{ matrix.os }}-latest
+    strategy:
+      fail-fast: false # we care about other platforms and channels building
+      matrix:
+        os: [ubuntu, macos, windows]
+        snyk_install_method: [npm]
+        node_version: [14, 16]
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions/setup-node@v1 # Needed for fixtures installation
+        with:
+          node-version: ${{ matrix.node_version }}
+
+      - name: Install Snyk with npm
+        if: ${{ matrix.snyk_install_method == 'npm' }}
+        run: |
+          echo "node_version: ${{ matrix.node_version }}"
+          node -v
+          echo "install snyk with npm"
+          npm install -g snyk
+
+      - name: Install Shellspec - non-windows
+        if: ${{ matrix.os != 'windows' && matrix.snyk_install_method != 'alpine-binary' }}
+        run: |
+          ./test/smoke-iac/install-shellspec.sh --yes
+          sudo ln -s ${HOME}/.local/lib/shellspec/shellspec /usr/local/bin/shellspec
+          ls -la ${HOME}/.local/lib/shellspec
+          echo "shellspec symlink:"
+          ls -la /usr/local/bin/shellspec
+          /usr/local/bin/shellspec --version
+          which shellspec
+          shellspec --version
+
+      - name: Install jq on Ubuntu
+        if: ${{ matrix.os == 'ubuntu' && matrix.snyk_install_method != 'alpine-binary' && matrix.snyk_install_method != 'npm-root-user' }}
+        run: |
+          sudo apt-get install jq
+
+      - name: Install Shellspec - Windows
+        shell: powershell
+        if: ${{ matrix.os == 'windows' }}
+        run: |
+          Get-Host | Select-Object Version
+          Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Windows-Subsystem-Linux
+          sh ./test/smoke-iac/install-shellspec.sh --yes
+
+      - name: Run shellspec tests - non-Windows
+        if: ${{ matrix.os != 'windows' && matrix.snyk_install_method != 'alpine-binary' && matrix.snyk_install_method != 'npm-root-user'  }}
+        working-directory: test/smoke-iac
+        shell: bash -l {0} # run bash with --login flag to load .bash_profile that's used by yarn install method
+        env:
+          SMOKE_TESTS_SNYK_TOKEN: ${{ secrets.SMOKE_TESTS_SNYK_TOKEN }}
+        run: |
+          which snyk
+          snyk version
+          shellspec -f d --skip-message quiet
+
+      - name: Run shellspec tests - Windows
+        if: ${{ matrix.os == 'windows' }}
+        working-directory: test/smoke-iac
+        shell: powershell
+        env:
+          SMOKE_TESTS_SNYK_TOKEN: ${{ secrets.SMOKE_TESTS_SNYK_TOKEN }}
+        run: |
+          sh ./run-shellspec-win.sh
