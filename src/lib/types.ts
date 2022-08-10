@@ -25,8 +25,6 @@ export interface TestOptions {
   command?: string; // python interpreter to use for python tests
   testDepGraphDockerEndpoint?: string | null;
   isDockerUser?: boolean;
-  /** @deprecated Only used by the legacy `iac test` flow remove once local exec path is GA */
-  iacDirFiles?: IacFileInDirectory[];
 }
 
 export interface Contributor {
@@ -237,6 +235,7 @@ export type SupportedUserReachableFacingCliArgs =
 
 export enum SupportedCliCommands {
   version = 'version',
+  about = 'about',
   help = 'help',
   // config = 'config', // TODO: cleanup `$ snyk config` parsing logic before adding it here
   // auth = 'auth', // TODO: auth does not support argv._ at the moment

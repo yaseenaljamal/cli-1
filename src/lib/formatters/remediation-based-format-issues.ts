@@ -179,7 +179,12 @@ export function formatIssuesWithRemediation(
     results.outputTextArray.push(upgradeIssues.textArray.join('\n'));
     results.counts.fixableTotal += upgradeIssues.countTotal;
     if (upgradeIssues.countBySeverity) {
-      results.counts.fixableBySeverity = upgradeIssues.countBySeverity;
+      Object.keys(upgradeIssues.countBySeverity).forEach((severity) => {
+        if (upgradeIssues.countBySeverity) {
+          results.counts.fixableBySeverity[severity] +=
+            upgradeIssues.countBySeverity[severity];
+        }
+      });
     }
   }
 
@@ -591,7 +596,9 @@ export function formatIssue(
   sampleReachablePaths?: SampleReachablePaths,
 ): string {
   const newBadge = isNew ? ' (new)' : '';
-  const name = vulnerableModule ? ` in ${chalk.bold(vulnerableModule)}` : '';
+  const introducedThrough = vulnerableModule
+    ? `\n    Introduced through: ${chalk.bold(vulnerableModule)}`
+    : '';
   let legalLicenseInstructionsText;
   if (legalInstructions) {
     legalLicenseInstructionsText = formatLegalInstructions(legalInstructions);
@@ -612,13 +619,13 @@ export function formatIssue(
     const pathStr = printPath(paths[0]);
     introducedBy =
       paths.length === 1
-        ? `\n    introduced by ${pathStr}`
-        : `\n    introduced by ${pathStr} and ${chalk.cyanBright(
+        ? `\n    Introduced by: ${pathStr}`
+        : `\n    Introduced by: ${pathStr} and ${chalk.cyanBright(
             '' + (paths.length - 1),
           )} other path(s)`;
   } else if (testOptions.showVulnPaths === 'all' && paths) {
     introducedBy =
-      '\n    introduced by:' +
+      '\n    Introduced by:' +
       paths
         .slice(0, 1000)
         .map((p) => '\n    ' + printPath(p))
@@ -650,9 +657,8 @@ export function formatIssue(
       )}${originalSeverityStr}] ${chalk.bold(title)}${newBadge}`,
     ) +
     reachabilityText +
-    '\n    ' +
-    `[${config.PUBLIC_VULN_DB_URL}/vuln/${id}]` +
-    name +
+    `\n    Info: [${config.PUBLIC_VULN_DB_URL}/vuln/${id}]` +
+    introducedThrough +
     reachableVia +
     introducedBy +
     (legalLicenseInstructionsText

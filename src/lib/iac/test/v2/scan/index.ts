@@ -11,6 +11,7 @@ import * as path from 'path';
 import * as rimraf from 'rimraf';
 import config from '../../../../config';
 import { getAuthHeader } from '../../../../api-token';
+import { allowAnalytics } from '../../../../analytics';
 
 const debug = newDebug('snyk-iac');
 
@@ -38,11 +39,7 @@ function scanWithConfig(
   rulesBundlePath: string,
   configPath: string,
 ): SnykIacTestOutput {
-  const args = ['-bundle', rulesBundlePath, '-config', configPath];
-
-  if (options.severityThreshold) {
-    args.push('-severity-threshold', options.severityThreshold);
-  }
+  const args = processFlags(options, rulesBundlePath, configPath);
 
   args.push(...options.paths);
 
@@ -72,6 +69,51 @@ function scanWithConfig(
   return output;
 }
 
+function processFlags(
+  options: TestConfig,
+  rulesBundlePath: string,
+  configPath: string,
+) {
+  const flags = ['-bundle', rulesBundlePath, '-config', configPath];
+
+  if (options.severityThreshold) {
+    flags.push('-severity-threshold', options.severityThreshold);
+  }
+
+  if (options.attributes?.criticality) {
+    flags.push(
+      '-project-business-criticality',
+      options.attributes.criticality.join(','),
+    );
+  }
+
+  if (options.attributes?.environment) {
+    flags.push(
+      '-project-environment',
+      options.attributes.environment.join(','),
+    );
+  }
+
+  if (options.attributes?.lifecycle) {
+    flags.push('-project-lifecycle', options.attributes.lifecycle.join(','));
+  }
+
+  if (options.projectTags) {
+    const stringifiedTags = options.projectTags
+      .map((tag) => {
+        return `${tag.key}=${tag.value}`;
+      })
+      .join(',');
+    flags.push('-project-tags', stringifiedTags);
+  }
+
+  if (options.report) {
+    flags.push('-report');
+  }
+
+  return flags;
+}
+
 function createConfig(options: TestConfig): string {
   try {
     const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'snyk-'));
@@ -81,6 +123,7 @@ function createConfig(options: TestConfig): string {
       org: options.orgSettings.meta.org,
       apiUrl: config.API,
       apiAuth: getAuthHeader(),
+      allowAnalytics: allowAnalytics(),
     });
 
     fs.writeFileSync(tempConfig, configData);

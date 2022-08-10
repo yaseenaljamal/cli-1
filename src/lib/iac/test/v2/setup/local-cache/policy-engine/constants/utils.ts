@@ -19,12 +19,12 @@ export function formatPolicyEngineFileName(releaseVersion: string) {
 }
 
 // this const is not placed in `index.ts` to avoid circular dependencies
-const policyEngineChecksums = `1ddb892ef4dcadb0d1af897c4c1cd4f32ea391b82e88b1577d377a1cdeeb985c  snyk-iac-test_0.8.0_Linux_arm64
-54acf3500d35c5f438260d20b04f22ee13e346412156fdd04ac9057f9ed94a2a  snyk-iac-test_0.8.0_Windows_x86_64.exe
-7914dc0e3ebbb52da2a12506faa40df5097217cbfd056496872a3d418326b45c  snyk-iac-test_0.8.0_Windows_arm64.exe
-7cdc4c096d44ce761d08aea2a0da55861b92cb6363fb274221d4837f723b3c11  snyk-iac-test_0.8.0_Darwin_x86_64
-d0db415baaf5a8bba7ec2d909729aa91e7393ee95a81cb308a84c7efef4b8bbb  snyk-iac-test_0.8.0_Darwin_arm64
-d35d12fccb766404a49de684df2a2cabecc78cb8f06ef0a9104e77ad26991e7d  snyk-iac-test_0.8.0_Linux_x86_64
+const policyEngineChecksums = `0a2566f393a963c4a863e774fb4fa055ecc5fd018407f4c92213085592693eb9  snyk-iac-test_0.15.0_Linux_x86_64
+5d46d756f849704cd811707e552dd9a9e047b01ea6ea43ce424ddd41936b295f  snyk-iac-test_0.15.0_Linux_arm64
+7c2e881766c26711cd51f5027ff0f84ffae02d419a6489fd219092e5a2b3253d  snyk-iac-test_0.15.0_Windows_x86_64.exe
+8e1f0c5ba1e0c4b3344218e1373b81a48c25f7d58e755e3032b7f995e4f0a6f8  snyk-iac-test_0.15.0_Windows_arm64.exe
+c456b9e7b0eb9c73e406cb955e5dfb6b0adc3cee92b3a17c23ec5f23f37f9eb4  snyk-iac-test_0.15.0_Darwin_x86_64
+d6d6e9b0f722b125e7be5e21a03104babad6949bb7ca6f7e2b19cc044fda9169  snyk-iac-test_0.15.0_Darwin_arm64
 `;
 
 export function getChecksum(policyEngineFileName: string): string {
