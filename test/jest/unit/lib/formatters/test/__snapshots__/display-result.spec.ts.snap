@@ -232,7 +232,6 @@ Testing src...
 
 Tested 2 dependencies for known issues, found 32 issues, 2 vulnerable paths.
 
-
 Issues with no direct upgrade or patch (1 issue):
 
   ✗ [Low] Directory Traversal
@@ -240,6 +239,7 @@ Issues with no direct upgrade or patch (1 issue):
     introduced by:
     django@1.6.1
     This issue was fixed in versions: 2.2.18, 3.0.12, 3.1.6
+
 
 
 Issues to fix by upgrading dependencies (1 issue):
@@ -261,6 +261,11 @@ Open source:       no
 Project path:      src
 Licenses:          enabled
 
+Test summary:
+
+  1 issues with no upgrade or patch
+  1 fixable issues: 1 Medium
+
 Tip: Try \`snyk fix\` to address these issues.\`snyk fix\` is a new CLI command in that aims to automatically apply the recommended updates for supported ecosystems.
 See documentation on how to enable this beta feature: https://docs.snyk.io/snyk-cli/fix-vulnerabilities-from-the-cli/automatic-remediation-with-snyk-fix#enabling-snyk-fix
 
@@ -273,7 +278,6 @@ Testing src...
 
 Tested 2 dependencies for known vulnerabilities, found 4 vulnerabilities, 4 vulnerable paths.
 
-
 Patchable issues (1 issue):
 
   Patch available for node-uuid@1.4.0
@@ -282,6 +286,7 @@ Patchable issues (1 issue):
     [URL] in node-uuid@1.4.0
     introduced by:
     node-uuid@1.4.0
+
 
 
 Issues to fix by upgrading (3 issues):
@@ -312,6 +317,10 @@ Project name:      shallow-goof
 Open source:       no
 Project path:      src
 
+Test summary:
+
+  4 fixable issues: 3 Low
+
 Tip: Detected multiple supported manifests (3), use --all-projects to scan all of them at once."
 `;
 
@@ -321,8 +330,8 @@ Testing src...
 
 Tested 3 dependencies for known issues, found 6 issues, 8 vulnerable paths.
 
-
 License issues (1 issue):
+
 
   ✗ [High] Unknown license
     [URL] in rack-cache@1.1
@@ -330,6 +339,7 @@ License issues (1 issue):
     rack-cache@1.1
     Legal instructions:
     ○ for LGPL-3.0 license: I am legal license instruction
+
 
 
 Issues to fix by upgrading (7 issues):
@@ -388,6 +398,11 @@ Package manager:   rubygems
 Open source:       no
 Project path:      src
 Licenses:          enabled
+
+Test summary:
+
+  1 license issues: 1 High
+  7 fixable issues: 1 High, 5 Medium, 1 Low
 
 Tip: Detected multiple supported manifests (3), use --all-projects to scan all of them at once."
 `;
