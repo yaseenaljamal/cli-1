@@ -8,26 +8,26 @@ Issues to fix by upgrading dependencies (4 issues):
   Upgrade flask to 1.0 to fix 2 issues
 
   ✗ [High] Improper Input Validation
-    Info: [https://security.snyk.io/vuln/SNYK-PYTHON-FLASK-42185]
+    Info: https://security.snyk.io/vuln/SNYK-PYTHON-FLASK-42185
     Introduced through: flask@0.12.2
     Introduced by: flask@0.12.2
 
   ✗ [High] Denial of Service (DOS)
-    Info: [https://security.snyk.io/vuln/SNYK-PYTHON-FLASK-451637]
+    Info: https://security.snyk.io/vuln/SNYK-PYTHON-FLASK-451637
     Introduced through: flask@0.12.2
     Introduced by: flask@0.12.2
 
   Pin Jinja2 to 2.10.1 to fix 1 issue
 
   ✗ [Medium] Sandbox Escape
-    Info: [https://security.snyk.io/vuln/SNYK-PYTHON-JINJA2-174126]
+    Info: https://security.snyk.io/vuln/SNYK-PYTHON-JINJA2-174126
     Introduced through: Jinja2@2.9.6
     Introduced by: flask@0.12.2 > Jinja2@2.9.6
 
   Pin Werkzeug to 0.15.3 to fix 1 issue
 
   ✗ [High] Insufficient Randomness
-    Info: [https://security.snyk.io/vuln/SNYK-PYTHON-WERKZEUG-458931]
+    Info: https://security.snyk.io/vuln/SNYK-PYTHON-WERKZEUG-458931
     Introduced through: Werkzeug@0.12.2
     Introduced by: flask@0.12.2 > Werkzeug@0.12.2
 

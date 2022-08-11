@@ -293,7 +293,7 @@ function constructPatchesText(
 
   patchedIssues.textArray.unshift(
     chalk.bold(
-      `\n\nPatchable issues (${patchedIssues.countTotal} ${
+      `\nPatchable issues (${patchedIssues.countTotal} ${
         patchedIssues.countTotal > 1 ? 'issues' : 'issue'
       }):`,
     ),
@@ -413,7 +413,7 @@ function constructUpgradesText(
   );
   upgradeIssues.textArray.unshift(
     chalk.bold(
-      `\n\nIssues to fix by upgrading (${upgradeIssues.countTotal} ${
+      `\nIssues to fix by upgrading (${upgradeIssues.countTotal} ${
         upgradeIssues.countTotal > 1 ? 'issues' : 'issue'
       }):`,
     ),
@@ -535,9 +535,7 @@ function constructUnfixableText(
 
     const extraInfo =
       issue.fixedIn && issue.fixedIn.length
-        ? `\n    This issue was fixed in versions: ${chalk.bold(
-            issue.fixedIn.join(', '),
-          )}`
+        ? `\n    Fixed in: ${chalk.bold(issue.fixedIn.join(', '))}`
         : '\n    No upgrade or patch available';
     unfixableIssuesTextArray.push(
       formatIssue(
@@ -657,7 +655,7 @@ export function formatIssue(
       )}${originalSeverityStr}] ${chalk.bold(title)}${newBadge}`,
     ) +
     reachabilityText +
-    `\n    Info: [${config.PUBLIC_VULN_DB_URL}/vuln/${id}]` +
+    `\n    Info: ${config.PUBLIC_VULN_DB_URL}/vuln/${id}` +
     introducedThrough +
     reachableVia +
     introducedBy +
