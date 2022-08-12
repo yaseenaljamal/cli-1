@@ -64,7 +64,7 @@ import { getAuthHeader } from '../api-token';
 import { getEcosystem } from '../ecosystems';
 import { Issue } from '../ecosystems/types';
 import { assembleEcosystemPayloads } from './assemble-payloads';
-import { makeRequest } from '../request';
+import { makeAsyncRequest } from '../request';
 import { spinner } from '../spinner';
 import { hasUnknownVersions } from '../dep-graph';
 
@@ -436,7 +436,7 @@ function sendTestPayload(
   const filesystemPolicy =
     payload.body && !!(payloadBody?.policy || payloadBody?.scanResult?.policy);
   return new Promise((resolve, reject) => {
-    makeRequest(payload, (error, res, body) => {
+    makeAsyncRequest(payload, (error, res, body) => {
       if (error) {
         return reject(error);
       }
