@@ -220,7 +220,7 @@ function constructLicenseText(
       undefined, // We can never override license rules, so no originalSeverity here
       basicLicenseInfo[id].legalInstructions,
     );
-    licenseIssues.textArray.push('\n' + licenseText);
+    licenseIssues.textArray.push(licenseText);
     licenseIssues.countTotal += 1;
     if (licenseIssues.countBySeverity) {
       licenseIssues.countBySeverity[basicLicenseInfo[id].severity] += 1;
@@ -228,7 +228,7 @@ function constructLicenseText(
   }
   licenseIssues.textArray.unshift(
     chalk.bold(
-      `\n\nLicense issues (${licenseIssues.countTotal} ${
+      `\nLicense issues (${licenseIssues.countTotal} ${
         licenseIssues.countTotal > 1 ? 'issues' : 'issue'
       }):`,
     ),
