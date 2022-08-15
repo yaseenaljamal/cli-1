@@ -33,8 +33,8 @@ describe('fix single pom.xml projects', () => {
 
     // Act
     const result = await snykFix.fix([entityToFix], {
-      // quiet: true,
-      // stripAnsi: true,
+      quiet: true,
+      stripAnsi: true,
     });
     // Assert
     expect(result).toMatchObject({
@@ -92,8 +92,8 @@ describe('fix single pom.xml projects', () => {
 
     // Act
     const result = await snykFix.fix([entityToFix], {
-      // quiet: true,
-      // stripAnsi: true,
+      quiet: true,
+      stripAnsi: true,
     });
     // Assert
     expect(result).toMatchObject({
@@ -157,8 +157,8 @@ describe('fix single pom.xml projects', () => {
 
     // Act
     const result = await snykFix.fix([entityToFix], {
-      // quiet: true,
-      // stripAnsi: true,
+      quiet: true,
+      stripAnsi: true,
     });
     // Assert
     expect(result).toMatchObject({
@@ -224,8 +224,8 @@ describe('fix single pom.xml projects', () => {
 
     // Act
     const result = await snykFix.fix([entityToFix], {
-      // quiet: true,
-      // stripAnsi: true,
+      quiet: true,
+      stripAnsi: true,
     });
     // Assert
     expect(result).toMatchObject({
@@ -290,8 +290,8 @@ describe('fix single pom.xml projects', () => {
 
     // Act
     const result = await snykFix.fix([entityToFix], {
-      // quiet: true,
-      // stripAnsi: true,
+      quiet: true,
+      stripAnsi: true,
     });
     // Assert
     expect(result).toMatchObject({
@@ -372,8 +372,8 @@ describe('fix single pom.xml projects', () => {
 
     // Act
     const result = await snykFix.fix([entityToFix], {
-      // quiet: true,
-      // stripAnsi: true,
+      quiet: true,
+      stripAnsi: true,
     });
     // Assert
     expect(result).toMatchObject({
@@ -438,8 +438,8 @@ describe('fix single pom.xml projects', () => {
 
     // Act
     const result = await snykFix.fix([entityToFix], {
-      // quiet: true,
-      // stripAnsi: true,
+      quiet: true,
+      stripAnsi: true,
     });
     // Assert
     expect(result).toMatchObject({

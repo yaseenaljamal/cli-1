@@ -14,7 +14,7 @@ import { PluginFixResponse } from '../../types';
 
 const debug = debugLib('snyk-fix:maven');
 
-enum PROVENANCE_TYPE {
+export enum PROVENANCE_TYPE {
   DEPENDENCY_MANAGEMENT = 'dependencyManagement',
   DEPENDENCY = 'dependency',
   PROPERTY = 'property',
@@ -125,7 +125,7 @@ function ensureArray<T>(value?: T | T[]): T[] {
  *
  * All fixes because of the restriction above are "inline" to force the package version.
  */
-async function applyUpgrade(
+export async function applyUpgrade(
   options: FixOptions,
   pomJson: any,
   pomXml: string,
@@ -195,7 +195,7 @@ async function applyUpgrade(
   return { changes };
 }
 
-function resolveVersion(
+export function resolveVersion(
   dependency: MavenDependency,
   pomJson: any,
 ): {
@@ -203,13 +203,11 @@ function resolveVersion(
   dependency: MavenDependency;
 } {
   const { version, groupId, artifactId } = dependency;
-
   // version defined inline
   if (version) {
     const provenanceType = isPropertyVersion(version)
       ? PROVENANCE_TYPE.PROPERTY
       : PROVENANCE_TYPE.DEPENDENCY;
-
     return { type: provenanceType, dependency };
   }
 
@@ -240,7 +238,7 @@ function resolveVersion(
   return { type: PROVENANCE_TYPE.DEPENDENCY, dependency };
 }
 
-function applyDependencyUpgrade(
+export function applyDependencyUpgrade(
   pomXml: string,
   upgradedVersion: string,
   groupId: string,
@@ -263,7 +261,7 @@ function applyDependencyUpgrade(
  * Extracts package information from a package name.
  * Returns pomXML file with the fix applied.
  */
-function applyPropertyUpgrade(
+export function applyPropertyUpgrade(
   pomXml: string,
   upgradedVersion: string,
   propertyName: string,
@@ -306,12 +304,12 @@ function simplifyXml(pomXml: string) {
 }
 
 interface MavenDependency {
-  version: string;
+  version?: string;
   groupId: string;
   artifactId: string;
 }
 
-function upgradeDependency(
+export function upgradeDependency(
   dependency: MavenDependency,
   newVersion: string,
   pomXml: string,
@@ -331,7 +329,7 @@ function upgradeDependency(
   } else if (versionProvenance === PROVENANCE_TYPE.PROPERTY) {
     const { version } = dependency;
     if (version) {
-      const propertyName = getPropertyVersionName(dependency.version);
+      const propertyName = getPropertyVersionName(version);
       updatedPomXml = applyPropertyUpgrade(pomXml, newVersion, propertyName);
     }
   } else {
@@ -341,11 +339,11 @@ function upgradeDependency(
   return updatedPomXml;
 }
 
-function isPropertyVersion(version: string): boolean {
+export function isPropertyVersion(version: string): boolean {
   return version.startsWith('$');
 }
 
-function getPropertyVersionName(version: string): string {
+export function getPropertyVersionName(version: string): string {
   const regex = /{(.*)}/g;
   const result = regex.exec(version);
 

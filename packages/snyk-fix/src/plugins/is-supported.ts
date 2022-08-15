@@ -24,23 +24,33 @@ export async function isSupported(
     return { supported: false, reason: 'No remediation data available' };
   }
 
-  // TODO: make per type checks nicer
-  if (entity.scanResult.identity.type === 'maven') {
-    if (
-      !remediationData.upgrade ||
-      Object.keys(remediationData.upgrade).length === 0
-    ) {
+  const type = entity.scanResult.identity.type;
+  const { pin, upgrade } = remediationData;
+
+  switch (type) {
+    case 'pip':
+    case 'poetry':
+      if (!pin || Object.keys(pin).length === 0) {
+        return {
+          supported: false,
+          reason: 'There is no actionable remediation to apply',
+        };
+      }
+
+      break;
+    case 'maven':
+      if (!upgrade || Object.keys(upgrade).length === 0) {
+        return {
+          supported: false,
+          reason: 'There is no actionable upgrades to apply',
+        };
+      }
+      break;
+    default:
       return {
         supported: false,
-        reason: 'There is no actionable remediation to apply',
+        reason: 'Unknown type', //TODO: better error
       };
-    }
-  }
-  if (!remediationData.pin || Object.keys(remediationData.pin).length === 0) {
-    return {
-      supported: false,
-      reason: 'There is no actionable remediation to apply',
-    };
   }
 
   return { supported: true };
