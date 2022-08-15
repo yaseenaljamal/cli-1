@@ -3,6 +3,10 @@
     {
       "repo": "https://github.com/snyk/sclix_woof",
       "commit_hash": "main"
+    },
+    {
+      "repo": "https://github.com/swinton/sclix-list-projects",
+      "commit_hash": "620351b627a607b565fdef50521224826430a29c"
     }
   ]
 }
