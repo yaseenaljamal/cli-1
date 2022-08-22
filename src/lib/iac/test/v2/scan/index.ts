@@ -22,11 +22,11 @@ const debug = newDebug('snyk-iac');
 
 export const systemCachePath = config.CACHE_PATH ?? envPaths('snyk').cache;
 
-export function scan(
+export async function scan(
   options: TestConfig,
   policyEnginePath: string,
   rulesBundlePath: string,
-): TestOutput {
+): Promise<TestOutput> {
   const configPath = createConfig(options);
   try {
     return scanWithConfig(
@@ -40,30 +40,27 @@ export function scan(
   }
 }
 
-function scanWithConfig(
+async function scanWithConfig(
   options: TestConfig,
   policyEnginePath: string,
   rulesBundlePath: string,
   configPath: string,
-): TestOutput {
+): Promise<TestOutput> {
   const args = processFlags(options, rulesBundlePath, configPath);
 
   args.push(...options.paths);
 
-  const process = childProcess.spawnSync(policyEnginePath, args, {
-    encoding: 'utf-8',
-    stdio: 'pipe',
-    maxBuffer: 1024 * 1024 * 10, // The default value is 1024 * 1024, if we see in the future that multiplying it by 10 is not enough we can increase it further.
-  });
+  let process;
+  try {
+    process = await runSnykIacTest(policyEnginePath, args);
+  } catch (err) {
+    throw new ScanError(`spawning process: ${err}`);
+  }
 
   debug('policy engine standard error:\n%s', '\n' + process.stderr);
 
-  if (process.status && process.status !== 0) {
-    throw new ScanError(`invalid exit status: ${process.status}`);
-  }
-
-  if (process.error) {
-    throw new ScanError(`spawning process: ${process.error}`);
+  if (process.code && process.code !== 0) {
+    throw new ScanError(`invalid exit status: ${process.code}`);
   }
 
   let snykIacTestOutput: SnykIacTestOutput;
@@ -167,6 +164,50 @@ function deleteConfig(configPath) {
   } catch (e) {
     debug('unable to delete temporary directory', e);
   }
+}
+
+async function runSnykIacTest(
+  policyEnginePath: string,
+  args: string[],
+): Promise<{
+  signal: NodeJS.Signals | null;
+  code: number | null;
+  stdout: string;
+  stderr: string;
+}> {
+  return new Promise((resolve, reject) => {
+    const stdoutChunks: Uint8Array[] = [];
+    const stderrChunks: Uint8Array[] = [];
+
+    const process = childProcess.spawn(policyEnginePath, args, {
+      stdio: 'pipe',
+    });
+
+    process.on('exit', (code, signal) => {
+      resolve({
+        stdout: Buffer.concat(stdoutChunks).toString('utf-8'),
+        stderr: Buffer.concat(stderrChunks).toString('utf-8'),
+        code,
+        signal,
+      });
+    });
+
+    process.on('error', (e) => {
+      reject(e);
+    });
+
+    process.stdout.on('data', (data) => {
+      stdoutChunks.push(data);
+    });
+
+    process.stdout.on('error', (err) => {
+      reject(err);
+    });
+
+    process.stderr.on('data', (data) => {
+      stderrChunks.push(data);
+    });
+  });
 }
 
 class ScanError extends CustomError {

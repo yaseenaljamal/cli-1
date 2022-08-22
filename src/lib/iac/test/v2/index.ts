@@ -8,5 +8,5 @@ export { TestConfig } from './types';
 export async function test(testConfig: TestConfig): Promise<TestOutput> {
   const { policyEnginePath, rulesBundlePath } = await setup(testConfig);
 
-  return scan(testConfig, policyEnginePath, rulesBundlePath);
+  return await scan(testConfig, policyEnginePath, rulesBundlePath);
 }
