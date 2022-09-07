@@ -1,20 +1,17 @@
-import { MethodArgs } from '../args';
-import { processCommandArgs } from './process-command-args';
-import * as legacyError from '../../lib/errors/legacy-errors';
-import {
-  driftignoreFromPolicy,
-  parseDriftAnalysisResults,
-  processAnalysis,
-} from '../../lib/iac/drift';
-import { getIacOrgSettings } from './test/iac/local-execution/org-settings/get-iac-org-settings';
-import { UnsupportedEntitlementCommandError } from './test/iac/local-execution/assert-iac-options-flag';
-import config from '../../lib/config';
-import { addIacDriftAnalytics } from './test/iac/local-execution/analytics';
-import * as analytics from '../../lib/analytics';
-import { findAndLoadPolicy } from '../../lib/policy';
-import { DescribeRequiredArgumentError } from '../../lib/errors/describe-required-argument-error';
-import help from './help';
-import { DCTL_EXIT_CODES, runDriftCTL } from '../../lib/iac/drift/driftctl';
+import { MethodArgs } from "../args";
+import { processCommandArgs } from "./process-command-args";
+import * as legacyError from "../../lib/errors/legacy-errors";
+import { driftignoreFromPolicy, parseDriftAnalysisResults, processAnalysis } from "../../lib/iac/drift";
+import { getIacOrgSettings } from "./test/iac/local-execution/org-settings/get-iac-org-settings";
+import { UnsupportedEntitlementCommandError } from "./test/iac/local-execution/assert-iac-options-flag";
+import config from "../../lib/config";
+import { addIacDriftAnalytics } from "./test/iac/local-execution/analytics";
+import * as analytics from "../../lib/analytics";
+import { findAndLoadPolicy } from "../../lib/policy";
+import { DescribeRequiredArgumentError } from "../../lib/errors/describe-required-argument-error";
+import help from "./help";
+import { DCTL_EXIT_CODES, runDriftCTL } from "../../lib/iac/drift/driftctl";
+import { makeRequestRest } from "../../lib/request/promise";
 
 export default async (...args: MethodArgs): Promise<any> => {
   const { options } = processCommandArgs(...args);
@@ -54,7 +51,9 @@ export default async (...args: MethodArgs): Promise<any> => {
     const analysis = parseDriftAnalysisResults(describe.stdout);
     addIacDriftAnalytics(analysis, options);
 
-    const output = await processAnalysis(options, describe);
+    const prioritizedAnalysis = await priorizeAnalysis(analysis)
+
+    const output = await processAnalysis(options, { code: describe.code, stdout: JSON.stringify(prioritizedAnalysis)});
     process.stdout.write(output);
   } catch (e) {
     if (e instanceof DescribeRequiredArgumentError) {
@@ -65,3 +64,43 @@ export default async (...args: MethodArgs): Promise<any> => {
     return Promise.reject(e);
   }
 };
+
+const priorizeAnalysis = async (analysis) => {
+
+  const environment_native_id = "929327065333"
+  const orgId = 'a75ccacc-b85d-49c6-a1d5-f65ec4d80d44'
+  const resourcesFromCloud = await makeRequestRest<any>({
+    qs: {
+      version: '2022-04-13~experimental',
+      status: 'open',
+      environment_native_id,
+    },
+    method: 'GET',
+    url: `http://localhost:8080/rest/orgs/${orgId}/cloud/issues`
+  });
+
+  for (const issue of resourcesFromCloud.data) {
+    const res = issue.relationships.resource.data
+    if (!res.attributes.resource_terraform_id) {
+      // TODO Add debug log, and maybe telemetry
+      continue
+    }
+
+    for (const unmanaged of analysis.unmanaged) {
+      if (res.attributes.resource_type === unmanaged.type &&
+        res.attributes.resource_terraform_id === unmanaged.id ) {
+        if (!unmanaged.issues) {
+          unmanaged.issues = []
+        }
+        const driftIssue = {
+          rule_id: issue.relationships.rule_result.data.attributes.rule_id,
+          severity: issue.attributes.severity,
+          message: issue.relationships.rule_result.data.attributes.message,
+        }
+        unmanaged.issues.push(driftIssue)
+      }
+    }
+  }
+  
+  return analysis
+}

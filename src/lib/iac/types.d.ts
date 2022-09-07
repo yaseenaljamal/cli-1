@@ -1,3 +1,5 @@
+import { message } from "danger";
+
 export type DriftctlExecutionResult = {
   code: number;
   stdout: string;
@@ -49,7 +51,14 @@ export type DriftResource = {
   type: string;
   human_readable_attributes?: DriftResourceAttributes;
   source?: DriftSource;
+  issues?: DriftIssue[];
 };
+
+export type DriftIssue = {
+  rule_id: string;
+  severity: string;
+  message: string;
+}
 
 export type DriftSource = {
   source: string;

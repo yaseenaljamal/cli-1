@@ -15,6 +15,7 @@ import {
   create as createDiffPatch,
   console as consoleFormatter,
 } from 'jsondiffpatch';
+import { put } from "needle";
 
 export function getHumanReadableAnalysis(
   option: DescribeOptions,
@@ -277,6 +278,14 @@ function getHumanReadableResourceList(driftResources: DriftResource[]): string {
   let output = '';
   for (const res of driftResources) {
     output += leftPad('ID: ' + chalk.bold(res.id), 4);
+    if (res.issues && res.issues.length > 0) {
+      let issues = '\n' + leftPad('Security issues:', 6)
+      for (const iss of res.issues) {
+        issues += '\n'
+        issues += leftPad(`- ${chalk.red('['+iss.severity.toUpperCase()+']')} ${iss.rule_id} ${iss.message}`, 8)
+      }
+      output += chalk.bold(issues)
+    }
     if (
       res.human_readable_attributes &&
       res.human_readable_attributes.size > 0
