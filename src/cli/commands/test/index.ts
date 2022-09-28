@@ -91,8 +91,14 @@ export default async function test(
     throw new MissingArgError();
   }
 
-  // TODO remove once https://github.com/snyk/cli/pull/3433 is merged
-  if (options.docker && !options['app-vulns']) {
+  const containerAppVulnsEnabled = await hasFeatureFlag(
+    'containerCliAppVulnsEnabled',
+    options,
+  );
+  if (
+    options.docker &&
+    (!containerAppVulnsEnabled || options['exclude-app-vulns'])
+  ) {
     options['exclude-app-vulns'] = true;
   }
 
