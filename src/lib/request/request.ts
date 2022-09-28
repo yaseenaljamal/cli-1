@@ -154,33 +154,6 @@ export async function makeRequest(
   });
 }
 
-export async function makeAsyncRequest(
-  payload: Payload,
-): Promise<{ res: needle.NeedleResponse; body: any }> {
-  let res = await makeRequest(payload);
-
-  const start = Date.now();
-  const timeout = 20 * 60 * 1000; // either optional timeout or 20 mins (workflow timeout?)
-  // eslint-disable-next-line no-constant-condition
-  while (true) {
-    res = await makeRequest({
-      ...payload,
-      method: 'get',
-      url: `${payload.url}/${res.body.id}`,
-    });
-    if (res.body.status === 'complete') {
-      return { res: res.res, body: res.body.issueGenerationOutput };
-    }
-    if (res.body.status === 'failed') {
-      throw new Error('Test failed');
-    }
-    if (Date.now() > start + timeout) {
-      throw new Error('Test timed out');
-    }
-    await sleep(2_000);
-  }
-}
-
 export async function streamRequest(
   payload: Payload,
 ): Promise<needle.ReadableStream> {
