@@ -68,6 +68,8 @@ import { assembleEcosystemPayloads } from './assemble-payloads';
 import { makeRequest } from '../request';
 import { spinner } from '../spinner';
 import { hasUnknownVersions } from '../dep-graph';
+import { getSelf } from '../ecosystems/unmanaged/utils';
+import { makeAsyncRequest } from '../request/async-request';
 
 const debug = debugModule('snyk:run-test');
 
@@ -226,7 +228,26 @@ async function sendAndParseResults(
     }
     /** sendTestPayload() deletes the request.body from the payload once completed. */
     const payloadCopy = Object.assign({}, payload);
-    const res = await sendTestPayload(payload);
+
+    const useAsyncWorkflow = process.env.USE_ASYNC_TEST_WORKFLOW;
+    let res;
+    if (useAsyncWorkflow) {
+      let orgId = options.org || '';
+
+      if (orgId === '') {
+        const {
+          data: {
+            attributes: { default_org_context },
+          },
+        } = await getSelf();
+
+        orgId = default_org_context;
+      }
+      res = await makeAsyncRequest(orgId, payload.body);
+    } else {
+      res = await sendTestPayload(payload);
+    }
+
     console.log('++++++++++res', JSON.stringify(res));
     const {
       depGraph,
@@ -751,7 +772,7 @@ async function assembleLocalPayloads(
         config.API +
         (options.testDepGraphDockerEndpoint ||
           options.vulnEndpoint ||
-          '/mock/test');
+          '/test-dep-graph');
       const payload: Payload = {
         method: 'POST',
         url: reqUrl,

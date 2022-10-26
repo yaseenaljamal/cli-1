@@ -150,7 +150,7 @@ export async function resolveAndTestFactsUnmanagedDeps(
 
   if (orgId === '') {
     const self = await getSelf();
-    orgId = self.default_org_context;
+    orgId = self.data.attributes.default_org_context;
   }
 
   for (const [path, scanResults] of Object.entries(scans)) {

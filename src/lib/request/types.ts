@@ -11,3 +11,20 @@ export interface Payload {
   timeout?: number;
   family?: number;
 }
+
+export interface TestExecutionResponse {
+  data: {
+    attributes: {
+      state?: string;
+    };
+    id: string;
+    type: string;
+  };
+  jsonapi: {
+    version: string;
+  };
+  links: {
+    self: string;
+    related?: string;
+  };
+}
