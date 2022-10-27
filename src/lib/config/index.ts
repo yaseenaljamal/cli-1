@@ -25,6 +25,7 @@ interface Config {
   IAC_BUNDLE_PATH?: string;
   IAC_POLICY_ENGINE_PATH?: string;
   PUBLIC_VULN_DB_URL: string;
+  SBOM_PATH?: string;
 }
 
 // TODO: fix the types!

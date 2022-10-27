@@ -12,6 +12,7 @@ const commands = {
   'update-exclude-policy': async (...args) =>
     callModule(import('./update-exclude-policy'), args),
   describe: async (...args) => callModule(import('./describe'), args),
+  sbom: async (...args) => callModule(import('./sbom'), args),
   help: async (...args) => callModule(import('./help'), args),
   ignore: async (...args) => callModule(import('./ignore'), args),
   monitor: async (...args) => callModule(import('./monitor'), args),
