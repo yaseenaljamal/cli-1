@@ -3,9 +3,11 @@ export type SBOMExecutionResult = {
   stdout: string;
 };
 
-export interface SBOMOptions {
-  kind: string;
-}
+export type SBOMOptions =
+  {
+    args: string;
+    paths: string[];
+  }
 
 
 

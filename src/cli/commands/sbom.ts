@@ -5,12 +5,11 @@ import help from './help';
 import { runSBOM } from '../../lib/sbom/sbom';
 
 export default async (...args: MethodArgs): Promise<any> => {
-  const { options } = processCommandArgs(...args);
+  const { options, paths } = processCommandArgs(...args);
 
   try {
-    console.log(options);
     const sbomExecutionResult = await runSBOM({
-      options: { ...options, kind: 'describe' },
+      options: { ...options, paths: paths },
     });
     process.exitCode = sbomExecutionResult.code;
     process.stdout.write(sbomExecutionResult.stdout);

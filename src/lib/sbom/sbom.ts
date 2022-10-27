@@ -11,10 +11,23 @@ import config from '../config';
 const debug = debugLib('sbom');
 
 
+export async function generateArgs(
+  options: SBOMOptions,
+): Promise<string[]> {
+
+  if (!options.paths || options.paths.length == 0) {
+    throw 'Pass a valid container image ref';
+  }
+
+  const res: string[] = options.paths.slice(0, 1);
+  if (options.args != null) {
+    res.push(options.args);
+  }
+  return res;
+}
+
 export const runSBOM = async ({
-                                options,
-                                input,
-                                stdio,
+                                options, input, stdio,
                               }: {
   options: SBOMOptions;
 
@@ -22,14 +35,14 @@ export const runSBOM = async ({
   stdio?: StdioOptions;
 }): Promise<SBOMExecutionResult> => {
   const path = await findDriftCtl();
-  const args: string[] = [];
 
+  const args: string[] = await generateArgs(options);
 
   if (!stdio) {
-    stdio = ['pipe', 'pipe', 'inherit'];
+    stdio = ['pipe', 'inherit'];
   }
 
-  debug('running driftctl %s ', args.join(' '));
+  debug('running sbom %s ', args.join(' '));
 
   const sbom_env: NodeJS.ProcessEnv = { ...process.env };
 
