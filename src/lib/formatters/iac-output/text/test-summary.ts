@@ -47,14 +47,14 @@ function formatCountsSection(testCounts: IacTestCounts): string {
   countsSectionProperties.push(
     `${colors.success.bold(
       icon.VALID,
-    )} Files without issues: ${colors.info.bold(
-      `${testCounts.filesWithoutIssues}`,
+    )} Resources without issues: ${colors.info.bold(
+      `${testCounts.resourcesScanned! - testCounts.resourcesWithIssues!}`,
     )}`,
   );
 
   countsSectionProperties.push(
-    `${colors.failure.bold(icon.ISSUE)} Files with issues: ${colors.info.bold(
-      `${testCounts.filesWithIssues}`,
+    `${colors.failure.bold(icon.ISSUE)} Resources with issues: ${colors.info.bold(
+      `${testCounts.resourcesWithIssues!}`,
     )}`,
   );
 

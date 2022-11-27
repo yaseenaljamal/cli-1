@@ -1,3 +1,4 @@
+import { count } from 'console';
 import { FormattedResult } from '../../../../cli/commands/test/iac/local-execution/types';
 import { iacRemediationTypes } from '../../../iac/constants';
 import { Results, Vulnerability } from '../../../iac/test/v2/scan/results';
@@ -127,8 +128,26 @@ export function formatSnykIacTestTestData(
       issues: totalIssues,
       issuesBySeverity: issuesCountBySeverity,
       contextSuppressedIssues: contextSuppressedIssueCount,
+      resourcesScanned: snykIacTestScanResult?.resources?.length,
+      resourcesWithIssues: countResourcesWithIssues(snykIacTestScanResult),
     },
   };
+}
+
+function countResourcesWithIssues(snykIacTestScanResult: Results | undefined) {
+  if (snykIacTestScanResult && snykIacTestScanResult.vulnerabilities) {
+    const resources = new Set<string>();
+
+    for (const vulnerability of snykIacTestScanResult.vulnerabilities) {
+      if (vulnerability.resource.id) {
+        resources.add(vulnerability.resource.id);
+      }
+    }
+
+    return resources.size;
+  }
+
+  return 0;
 }
 
 function countFilesWithIssues(results?: Results): number {

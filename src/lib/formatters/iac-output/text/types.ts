@@ -27,6 +27,8 @@ export interface IacTestCounts {
   issues: number;
   issuesBySeverity: { [severity in SEVERITY]: number };
   contextSuppressedIssues?: number;
+  resourcesScanned?: number;
+  resourcesWithIssues?: number;
 }
 
 export type IaCTestFailure = {
