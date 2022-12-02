@@ -227,8 +227,9 @@ describe('Proxy configuration behavior', () => {
     });
 
     if (!isCLIV2()) {
-      it('needle behavior - http request should directly go through and not hit the proxy if protocol upgrade is disabled.', async () => {
-        const { code } = await runSnykCLI(`woof -d`, {
+      // This scenario should actually work, an http request should directly go through and not hit the proxy if protocol upgrade is disabled.
+      it('needle behavior - only HTTPS Proxy is set but HTTP request (without protocol upgrade) fails.', async () => {
+        const { code, stderr } = await runSnykCLI(`woof -d`, {
           env: {
             ...process.env,
             HTTPS_PROXY: FAKE_HTTP_PROXY,
@@ -237,7 +238,13 @@ describe('Proxy configuration behavior', () => {
           },
         });
 
-        expect(code).toBe(0);
+        expect(code).toBe(2);
+
+        // Incorrect behavior when Needle tries to upgrade connection after 301 http->https and the Agent option is set to a strict http/s protocol.
+        // See lines with `keepAlive` in request.ts for more details
+        expect(stderr).toContain(
+          'TypeError [ERR_INVALID_PROTOCOL]: Protocol "https:" not supported. Expected "http:"',
+        );
       });
     }
   });
