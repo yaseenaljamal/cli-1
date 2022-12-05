@@ -45,6 +45,7 @@ import iacTestCommand from './iac';
 import * as iacTestCommandV2 from './iac/v2';
 import { hasFeatureFlag } from '../../../lib/feature-flags';
 import { checkOSSPaths } from '../../../lib/check-paths';
+import { parseK8ContainersDeclaration } from '../../../lib/container/k8';
 
 const debug = Debug('snyk-test');
 const SEPARATOR = '\n-------------------------------------------------------\n';
@@ -60,9 +61,14 @@ more info.`;
 export default async function test(
   ...args: MethodArgs
 ): Promise<TestCommandResult> {
-  const { options: originalOptions, paths } = processCommandArgs(...args);
+  let { options: originalOptions, paths } = processCommandArgs(...args);
 
   const options = setDefaultTestOptions(originalOptions);
+
+  if (options.docker && options.k8) {
+    paths = parseK8ContainersDeclaration(paths);
+  }
+
   if (originalOptions.iac) {
     // temporary placeholder for the "new" flow that integrates with UPE
     if (await hasFeatureFlag('iacIntegratedExperience', options)) {

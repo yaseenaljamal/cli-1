@@ -84,6 +84,7 @@
     "global-agent": "^2.1.12",
     "jest-json-schema": "^6.1.0",
     "jsondiffpatch": "^0.4.1",
+    "kubernetes-types": "^1.25.0",
     "lodash.assign": "^4.2.0",
     "lodash.camelcase": "^4.3.0",
     "lodash.capitalize": "^4.2.1",

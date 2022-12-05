@@ -87,6 +87,7 @@ export interface Options {
   report?: boolean;
   'var-file'?: string;
   'target-name'?: string;
+  'k8'?: boolean;
 }
 
 // TODO(kyegupov): catch accessing ['undefined-properties'] via noImplicitAny
