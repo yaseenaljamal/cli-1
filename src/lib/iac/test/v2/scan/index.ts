@@ -231,6 +231,7 @@ function processFlagsV2(
   policyPath: string,
 ) {
   const flags = [
+    '-print',
     '-cache-dir',
     systemCachePath,
     '-bundle',
