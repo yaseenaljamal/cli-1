@@ -4,8 +4,10 @@ Entry point class for the CLIv2 version.
 package cliv2
 
 import (
+	"bytes"
 	_ "embed"
 	"fmt"
+	"github.com/pkg/errors"
 	"io"
 	"log"
 	"os"
@@ -33,6 +35,8 @@ type CLI struct {
 	stdout           io.Writer
 	stderr           io.Writer
 	env              []string
+	stderrGrabber    *bytes.Buffer
+	stdoutGrabber    *bytes.Buffer
 }
 
 type EnvironmentWarning struct {
@@ -55,14 +59,21 @@ func NewCLIv2(cacheDirectory string, debugLogger *log.Logger) (*CLI, error) {
 		return nil, err
 	}
 
+	stdoutOutputGrabber := bytes.NewBuffer([]byte{})
+	stderrOutputGrabber := bytes.NewBuffer([]byte{})
+	cliStdOut := io.MultiWriter(os.Stdout, stdoutOutputGrabber)
+	cliStdErr := io.MultiWriter(os.Stderr, stderrOutputGrabber)
+
 	cli := CLI{
 		DebugLogger:      debugLogger,
 		CacheDirectory:   cacheDirectory,
 		v1BinaryLocation: v1BinaryLocation,
 		stdin:            os.Stdin,
-		stdout:           os.Stdout,
-		stderr:           os.Stderr,
+		stdout:           cliStdOut,
+		stderr:           cliStdErr,
 		env:              os.Environ(),
+		stdoutGrabber:    stdoutOutputGrabber,
+		stderrGrabber:    stderrOutputGrabber,
 	}
 
 	return &cli, nil
@@ -377,7 +388,9 @@ func (c *CLI) executeV1Default(proxyInfo *proxy.ProxyInfo, passThroughArgs []str
 	}
 
 	err = snykCmd.Run()
-
+	if err != nil {
+		err = errors.Wrap(err, c.stderrGrabber.String())
+	}
 	return err
 }
 
