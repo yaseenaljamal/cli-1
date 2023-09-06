@@ -765,7 +765,7 @@ async function assembleLocalPayloads(
 
       const body: PayloadBody = {
         // WARNING: be careful changing this as it affects project uniqueness
-        targetFile: project.plugin.targetFile,
+        targetFile: targetFile || project.plugin.targetFile,
 
         // TODO: Remove relativePath prop once we gather enough ruby related logs
         targetFileRelativePath: `${targetFileRelativePath}`, // Forcing string

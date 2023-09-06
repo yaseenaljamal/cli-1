@@ -53,5 +53,5 @@ export function getTargetFile(
   if (isContainer(scannedProject)) {
     return getContainerTargetFile(scannedProject);
   }
-  return pluginMeta.targetFile;
+  return pluginMeta.targetFile || scannedProject.targetFile;
 }
