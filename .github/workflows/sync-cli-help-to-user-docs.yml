@@ -13,7 +13,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - run: |
-          echo "Setting up gh"
+          echo "Setting up gh..."
+          gh auth status
           gh auth setup-git
           git config --global user.email "noreply@snyk.io"
           git config --global user.name "$GITHUB_ACTOR"
