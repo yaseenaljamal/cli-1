@@ -13,24 +13,45 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - run: |
+          echo "Setting up gh"
           gh auth setup-git
           git config --global user.email "noreply@snyk.io"
           git config --global user.name "$GITHUB_ACTOR"
           gh repo clone snyk/snyk cli -- --depth=1 --quiet
           gh repo clone snyk/user-docs docs -- --depth=1 --quiet
+
+          echo "Checking out docs branch"
           git -C ./cli checkout -b docs/automatic-gitbook-update
 
+          echo "Copying docs"
           cp ./docs/docs/snyk-cli/commands/*.md ./cli/help/cli-commands/
 
+          echo "Checking for changes"
           if [[ $(git -C ./cli status --porcelain) ]]; then
             echo "Documentation changes detected"
             cd ./cli
+            
+            echo "Installing dependencies"
             npm clean-install
+
+            echo "Formatting"
             npx prettier --write ./help/cli-commands/*.md
+
+            echo "Showing changed files"
             git --no-pager diff --name-only
-            git add .
+            
+            echo "Stage changes"
+            git status -s
+            git add -v .
+            git status -s
+
+            echo "Committing changes"
             git commit -m "docs: synchronizing help from snyk/user-docs"
+
+            echo "Pushing changes"
             git push --force --set-upstream origin docs/automatic-gitbook-update
+
+            echo "Handle creating PR"
             if [[ ! $(gh pr view docs/automatic-gitbook-update 2>&1 | grep -q "no open pull requests";) ]]; then
               echo "Creating PR"
               gh pr create --title="Synchronizing CLI help from user-docs" --body="Automatic PR controlled by GitHub Action" --head docs/automatic-gitbook-update
