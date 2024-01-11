@@ -24,15 +24,19 @@ import (
 	"github.com/snyk/cli/cliv2/internal/cliv2"
 	"github.com/snyk/cli/cliv2/internal/constants"
 	"github.com/snyk/cli/cliv2/pkg/basic_workflows"
+
+	"github.com/snyk/cli-extension-unmanaged/adapters"
 	"github.com/snyk/go-application-framework/pkg/analytics"
 	"github.com/snyk/go-application-framework/pkg/app"
 	"github.com/snyk/go-application-framework/pkg/auth"
 	"github.com/snyk/go-application-framework/pkg/configuration"
+
 	localworkflows "github.com/snyk/go-application-framework/pkg/local_workflows"
 	"github.com/snyk/go-application-framework/pkg/networking"
 	"github.com/snyk/go-application-framework/pkg/workflow"
 	"github.com/snyk/go-httpauth/pkg/httpauth"
 	"github.com/snyk/snyk-iac-capture/pkg/capture"
+
 	snykls "github.com/snyk/snyk-ls/ls_extension"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
@@ -447,6 +451,7 @@ func MainWithErrorCode() int {
 	engine.AddExtensionInitializer(capture.Init)
 	engine.AddExtensionInitializer(iacrules.Init)
 	engine.AddExtensionInitializer(snykls.Init)
+	engine.AddExtensionInitializer(adapters.CLI.Init)
 
 	// init engine
 	err = engine.Init()
