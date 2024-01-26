@@ -1,3 +1,3 @@
-const { createJestConfig } = require('../test/createJestConfig');
+import { createJestConfig } from '../test/createJestConfig';
 
-module.exports = createJestConfig({ displayName: 'ts-binary-wrapper' });
+export default createJestConfig({ displayName: 'ts-binary-wrapper' });

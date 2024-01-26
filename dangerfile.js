@@ -1,5 +1,5 @@
-const { danger, warn, fail, message } = require('danger');
-const fs = require('fs');
+import { danger, warn, fail, message } from 'danger';
+import fs from 'fs';
 
 const MAX_COMMIT_MESSAGE_LENGTH = 72;
 const SMOKE_TEST_BRANCH = 'smoke/';

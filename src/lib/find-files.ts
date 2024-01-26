@@ -1,8 +1,6 @@
 import * as fs from 'fs';
 import * as pathLib from 'path';
-
-const sortBy = require('lodash.sortby');
-const groupBy = require('lodash.groupby');
+import { sortBy, groupBy } from 'lodash';
 import { detectPackageManagerFromFile } from './detect';
 import * as debugModule from 'debug';
 

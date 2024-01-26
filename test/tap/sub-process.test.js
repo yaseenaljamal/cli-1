@@ -1,7 +1,6 @@
-const path = require('path');
-const test = require('tap').test;
-
-const subProcess = require('../../src/lib/sub-process');
+import path from 'path';
+import { test } from 'tap';
+import subProcess from '../../src/lib/sub-process';
 
 let scriptDir;
 let scriptExtension;

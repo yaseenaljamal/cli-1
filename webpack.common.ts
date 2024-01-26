@@ -1,6 +1,6 @@
-const path = require('path');
-const CopyPlugin = require('copy-webpack-plugin');
-const LicensePlugin = require('webpack-license-plugin');
+import path from 'path';
+import CopyPlugin from 'copy-webpack-plugin';
+import LicensePlugin from 'webpack-license-plugin';
 
 export default {
   entry: './src/cli/index.ts',

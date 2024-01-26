@@ -1,7 +1,7 @@
-const tap = require('tap');
+import tap from 'tap';
 const test = tap.test;
-const url = require('url');
-const http = require('http');
+import url from 'url';
+import http from 'http';
 import { makeRequest } from '../../src/lib/request';
 
 const proxyPort = 4242;

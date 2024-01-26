@@ -1,14 +1,12 @@
-const { getCliBinaryPath } = require('./jest/util/getCliBinaryPath');
-const {
-  isDontSkipTestsEnabled,
-} = require('./jest/util/isDontSkipTestsEnabled');
-const {
+import { getCliBinaryPath } from './jest/util/getCliBinaryPath';
+import { isDontSkipTestsEnabled } from './jest/util/isDontSkipTestsEnabled';
+import {
   fipsTestsEnabled,
   getFipsEnabledEnvironment,
-} = require('./jest/util/fipsTestHelper');
-const { runSnykCLI } = require('./jest/util/runSnykCLI');
+} from './jest/util/fipsTestHelper';
+import { runSnykCLI } from './jest/util/runSnykCLI';
 
-module.exports = async function() {
+export default async function() {
   if (process.env.TEST_SNYK_COMMAND) {
     process.env.TEST_SNYK_COMMAND = getCliBinaryPath();
   }
@@ -61,4 +59,4 @@ module.exports = async function() {
       '\n Environment successfully setup! Starting to run tests now!' +
       '\n------------------------------------------------------------',
   );
-};
+}

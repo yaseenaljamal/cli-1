@@ -1,4 +1,4 @@
-const abbrev = require('abbrev');
+import abbrev from 'abbrev';
 
 // Wrapper for Commonjs compatibility
 async function callModule(mod, args) {
@@ -30,4 +30,4 @@ const commands = {
 commands.aliases = abbrev(Object.keys(commands));
 commands.aliases.t = 'test';
 
-module.exports = commands;
+export default commands;

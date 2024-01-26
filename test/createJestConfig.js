@@ -20,6 +20,6 @@ const createJestConfig = (config) => {
   };
 };
 
-module.exports = {
+export default {
   createJestConfig,
 };

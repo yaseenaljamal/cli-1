@@ -1,4 +1,4 @@
-const snykConfig = require('./config');
+import snykConfig from './config';
 
 // This module is kind of "world object" that is used to indirectly import modules.
 // This also introduces some circular imports.
@@ -6,11 +6,11 @@ const snykConfig = require('./config');
 // TODO(kyegupov): untangle this, resolve circular imports, convert to Typescript
 
 const snyk = {};
-module.exports = snyk;
+export default snyk;
 
 snyk.id = snykConfig.id;
 
-const apiToken = require('./api-token');
+import apiToken from './api-token';
 
 // make snyk.api *always* get the latest api token from the config store
 Object.defineProperty(snyk, 'api', {

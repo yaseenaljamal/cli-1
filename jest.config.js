@@ -1,6 +1,6 @@
-const { createJestConfig } = require('./test/createJestConfig');
+import { createJestConfig } from './test/createJestConfig';
 
-module.exports = createJestConfig({
+export default createJestConfig({
   displayName: 'snyk',
   projects: ['<rootDir>', '<rootDir>/packages/*'],
   globalSetup: './test/setup.js',

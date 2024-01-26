@@ -1,11 +1,11 @@
-const _ = require('lodash');
-const sinon = require('sinon');
-const tap = require('tap');
+import * as _ from 'lodash';
+import sinon from 'sinon';
+import tap from 'tap';
 const test = tap.test;
 
-const cli = require('../cli/commands');
-const snyk = require('..');
-const { getFixturePath } = require('../jest/util/getFixturePath');
+import cli from '../cli/commands';
+import snyk from '..';
+import { getFixturePath } from '../jest/util/getFixturePath';
 
 sinon.stub(snyk, 'test', function() {
   return require(getFixturePath('more-vuln-paths-than-vulns'));

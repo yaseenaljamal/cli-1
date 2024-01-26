@@ -1,3 +1,3 @@
-const { createJestConfig } = require('../../test/createJestConfig');
+import { createJestConfig } from '../../test/createJestConfig';
 
-module.exports = createJestConfig({ displayName: '@snyk/iac-cli-alert' });
+export default createJestConfig({ displayName: '@snyk/iac-cli-alert' });

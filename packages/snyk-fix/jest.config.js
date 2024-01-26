@@ -1,3 +1,3 @@
-const { createJestConfig } = require('../../test/createJestConfig');
+import { createJestConfig } from '../../test/createJestConfig';
 
-module.exports = createJestConfig({ displayName: '@snyk/fix' });
+export default createJestConfig({ displayName: '@snyk/fix' });

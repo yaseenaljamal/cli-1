@@ -95,6 +95,7 @@ export function determineBinaryName(platform: string, arch: string): string {
       break;
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
   const supportedPlatforms = require(binaryDeploymentsFilePath);
   const binaryName = supportedPlatforms[osname][archname];
 

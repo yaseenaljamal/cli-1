@@ -1,11 +1,11 @@
-module.exports = test;
+export default test;
 
-const detect = require('../detect');
-const { runTest } = require('./run-test');
-const chalk = require('chalk');
-const pm = require('../package-managers');
-const { UnsupportedPackageManagerError } = require('../errors');
-const { isMultiProjectScan } = require('../is-multi-project-scan');
+import detect from '../detect';
+import { runTest } from './run-test';
+import chalk from 'chalk';
+import pm from '../package-managers';
+import { UnsupportedPackageManagerError } from '../errors';
+import { isMultiProjectScan } from '../is-multi-project-scan';
 
 async function test(root, options, callback) {
   if (typeof options === 'function') {

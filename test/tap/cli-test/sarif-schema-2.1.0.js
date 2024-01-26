@@ -1,5 +1,5 @@
 // taken from "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json"
-module.exports = {
+export default {
   $schema: 'http://json-schema.org/draft-07/schema#',
   title: 'Static Analysis Results Format (SARIF) Version 2.1.0 JSON Schema',
   $id:

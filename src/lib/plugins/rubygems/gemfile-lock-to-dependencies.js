@@ -1,6 +1,6 @@
-const gemfile = require('@snyk/gemfile');
+import gemfile from '@snyk/gemfile';
 
-module.exports = gemfileLockToDependencies;
+export default gemfileLockToDependencies;
 
 const detectCycles = (dep, chain) => {
   if (chain.indexOf(dep) >= 0) {
