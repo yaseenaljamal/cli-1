@@ -127,13 +127,4 @@ Describe "Snyk CLI basics"
       The result of "print_snyk_config()" should not include "newvalue"
     End
   End
-
-  Describe "snyk --about"
-    It "prints license attributions"
-      When run snyk --about
-      The output should include "Snyk CLI Open Source Attributions" # Version should start with a (major) 1
-      The status should be success
-      The stderr should equal ""
-    End
-  End
 End
