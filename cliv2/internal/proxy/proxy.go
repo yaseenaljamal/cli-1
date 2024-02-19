@@ -12,6 +12,7 @@ import (
 	"os"
 
 	"github.com/google/uuid"
+
 	"github.com/snyk/go-application-framework/pkg/configuration"
 
 	"github.com/snyk/go-application-framework/pkg/networking/certs"

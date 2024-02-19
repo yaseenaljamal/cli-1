@@ -15,9 +15,11 @@ import (
 	"path"
 	"regexp"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/gofrs/flock"
+
 	"github.com/snyk/go-application-framework/pkg/configuration"
 	"github.com/snyk/go-application-framework/pkg/utils"
 
@@ -40,6 +42,7 @@ type CLI struct {
 	stderr           io.Writer
 	env              []string
 	globalConfig     configuration.Configuration
+	mutex            *sync.Mutex
 }
 
 type EnvironmentWarning struct {
@@ -72,6 +75,7 @@ func NewCLIv2(config configuration.Configuration, debugLogger *log.Logger) (*CLI
 		stderr:           os.Stderr,
 		env:              os.Environ(),
 		globalConfig:     config,
+		mutex:            &sync.Mutex{},
 	}
 
 	return &cli, nil
@@ -83,6 +87,9 @@ func (c *CLI) SetV1BinaryLocation(filePath string) {
 }
 
 func (c *CLI) Init() (err error) {
+	// ensure that the initialization is done only once
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
 	c.DebugLogger.Println("Init start")
 
 	if len(c.CacheDirectory) > 0 {

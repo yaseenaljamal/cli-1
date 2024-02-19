@@ -3,17 +3,19 @@ package basic_workflows
 import (
 	"bufio"
 	"bytes"
+	"log"
 	"net/http"
 	"os"
 
 	"github.com/pkg/errors"
+	"github.com/spf13/pflag"
+
 	"github.com/snyk/go-application-framework/pkg/auth"
 	"github.com/snyk/go-application-framework/pkg/configuration"
 	"github.com/snyk/go-application-framework/pkg/logging"
 	pkg_utils "github.com/snyk/go-application-framework/pkg/utils"
 	"github.com/snyk/go-application-framework/pkg/workflow"
 	"github.com/snyk/go-httpauth/pkg/httpauth"
-	"github.com/spf13/pflag"
 
 	"github.com/snyk/cli/cliv2/internal/cliv2"
 	"github.com/snyk/cli/cliv2/internal/constants"
@@ -22,6 +24,7 @@ import (
 
 var WORKFLOWID_LEGACY_CLI workflow.Identifier = workflow.NewWorkflowIdentifier("legacycli")
 var DATATYPEID_LEGACY_CLI_STDOUT workflow.Identifier = workflow.NewTypeIdentifier(WORKFLOWID_LEGACY_CLI, "stdout")
+var LEGACYCLI_WRAPPER_PROXY *proxy.WrapperProxy
 
 const (
 	PROXY_NOAUTH string = "proxy-noauth"
@@ -36,6 +39,32 @@ func Init(engine workflow.Engine) error {
 	config := workflow.ConfigurationOptionsFromFlagset(flagset)
 	entry, _ := engine.Register(WORKFLOWID_LEGACY_CLI, config, legacycliWorkflow)
 	entry.SetVisibility(false)
+
+	debugLogger := log.Default()
+	var err error
+	LEGACYCLI_WRAPPER_PROXY, err = proxy.NewWrapperProxy(engine.GetConfiguration(), cliv2.GetFullVersion(), debugLogger)
+	// init proxy object
+	if err != nil {
+		return errors.Wrap(err, "Failed to create proxy!")
+	}
+
+	networkAccess := engine.GetNetworkAccess()
+	proxyAuthenticationMechanismString := engine.GetConfiguration().GetString(configuration.PROXY_AUTHENTICATION_MECHANISM)
+	proxyAuthenticationMechanism := httpauth.AuthenticationMechanismFromString(proxyAuthenticationMechanismString)
+
+	LEGACYCLI_WRAPPER_PROXY.SetUpstreamProxyAuthentication(proxyAuthenticationMechanism)
+
+	proxyHeaderFunc := func(req *http.Request) error {
+		err := networkAccess.AddHeaders(req)
+		return err
+	}
+	LEGACYCLI_WRAPPER_PROXY.SetHeaderFunction(proxyHeaderFunc)
+
+	err = LEGACYCLI_WRAPPER_PROXY.Start()
+	if err != nil {
+		return errors.Wrap(err, "Failed to start the proxy!")
+	}
+
 	return nil
 }
 
@@ -67,15 +96,12 @@ func legacycliWorkflow(
 
 	config := invocation.GetConfiguration()
 	debugLogger := invocation.GetLogger()
-	networkAccess := invocation.GetNetworkAccess()
 
 	oauthIsAvailable := config.GetBool(configuration.FF_OAUTH_AUTH_FLOW_ENABLED)
 	args := config.GetStringSlice(configuration.RAW_CMD_ARGS)
 	useStdIo := config.GetBool(configuration.WORKFLOW_USE_STDIO)
 	isDebug := config.GetBool(configuration.DEBUG)
 	workingDirectory := config.GetString(configuration.WORKING_DIRECTORY)
-	proxyAuthenticationMechanismString := config.GetString(configuration.PROXY_AUTHENTICATION_MECHANISM)
-	proxyAuthenticationMechanism := httpauth.AuthenticationMechanismFromString(proxyAuthenticationMechanismString)
 	analyticsDisabled := config.GetBool(configuration.ANALYTICS_DISABLED)
 
 	debugLogger.Println("Arguments:", args)
@@ -131,28 +157,8 @@ func legacycliWorkflow(
 		cli.SetIoStreams(os.Stdin, os.Stdout, scrubbedStderr)
 	}
 
-	// init proxy object
-	wrapperProxy, err := proxy.NewWrapperProxy(config, cliv2.GetFullVersion(), debugLogger)
-	if err != nil {
-		return output, errors.Wrap(err, "Failed to create proxy!")
-	}
-	defer wrapperProxy.Close()
-
-	wrapperProxy.SetUpstreamProxyAuthentication(proxyAuthenticationMechanism)
-
-	proxyHeaderFunc := func(req *http.Request) error {
-		err := networkAccess.AddHeaders(req)
-		return err
-	}
-	wrapperProxy.SetHeaderFunction(proxyHeaderFunc)
-
-	err = wrapperProxy.Start()
-	if err != nil {
-		return output, errors.Wrap(err, "Failed to start the proxy!")
-	}
-
 	// run the cli
-	proxyInfo := wrapperProxy.ProxyInfo()
+	proxyInfo := LEGACYCLI_WRAPPER_PROXY.ProxyInfo()
 	err = cli.Execute(proxyInfo, finalizeArguments(args, config.GetStringSlice(configuration.UNKNOWN_ARGS)))
 
 	if !useStdIo {
