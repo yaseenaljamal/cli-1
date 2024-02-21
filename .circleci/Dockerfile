@@ -1,5 +1,11 @@
 FROM --platform=$TARGETPLATFORM golang:1.21.4-bullseye
 
+# Link the image to the source project. This grants snyk/cli's Github Actions permission to publish the image.
+LABEL org.opencontainers.image.source="https://github.com/snyk/cli"
+
+# A description shown for the image in the Github Container Registry UI.
+LABEL org.opencontainers.image.description="Snyk CLI build environment"
+
 # install "normal" stuff
 
 ARG NODEVERSION

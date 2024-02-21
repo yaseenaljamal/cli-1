@@ -19,9 +19,9 @@ pushd "$SCRIPT_DIR/.."
   NODEVERSION=$(head -1 .nvmrc)
   export NODEVERSION
 
-  docker login -u "$DOCKER_USERNAME" -p "$DOCKER_PASSWORD"
+  docker login -u token -p ${GITHUB_TOKEN}
 
-  BASE_IMG_NAME=$DOCKER_USERNAME/cli-build
+  BASE_IMG_NAME=ghcr.io/snyk/cli-build
   docker buildx build \
     --build-arg NODEVERSION="$NODEVERSION" \
     --build-arg ARCH="x86_64" \
@@ -31,7 +31,7 @@ pushd "$SCRIPT_DIR/.."
     --push \
     --file .circleci/Dockerfile .
 
-  BASE_IMG_NAME=$DOCKER_USERNAME/cli-build-arm64
+  BASE_IMG_NAME=ghcr.io/snyk/cli-build-arm64
   docker buildx build \
     --build-arg NODEVERSION="$NODEVERSION" \
     --build-arg ARCH="aarch64" \
