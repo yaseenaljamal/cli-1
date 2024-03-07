@@ -9,7 +9,7 @@ describe('analytics module', () => {
   let env: Record<string, string>;
 
   beforeAll((done) => {
-    const port = process.env.PORT || process.env.SNYK_PORT || '12345';
+    const port = process.env.PORT || process.env.SNYK_PORT || '12520';
     const baseApi = '/api/v1';
     env = {
       ...process.env,

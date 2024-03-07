@@ -9,7 +9,7 @@ describe('snyk test --all-projects (mocked server only)', () => {
   let env: Record<string, string>;
 
   beforeAll((done) => {
-    const port = process.env.PORT || process.env.SNYK_PORT || '12345';
+    const port = process.env.PORT || process.env.SNYK_PORT || '12470';
     const baseApi = '/api/v1';
     env = {
       ...process.env,

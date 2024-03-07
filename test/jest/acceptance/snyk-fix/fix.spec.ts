@@ -18,7 +18,7 @@ describe('snyk fix', () => {
 
   beforeAll(async () => {
     const apiPath = '/api/v1';
-    const apiPort = process.env.PORT || process.env.SNYK_PORT || '12345';
+    const apiPort = process.env.PORT || process.env.SNYK_PORT || '12440';
     env = {
       ...process.env,
       SNYK_API: 'http://localhost:' + apiPort + apiPath,

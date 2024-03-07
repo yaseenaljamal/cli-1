@@ -12,7 +12,7 @@ describe('analytics module', () => {
   let env: Record<string, string>;
 
   beforeAll((done) => {
-    const port = process.env.PORT || process.env.SNYK_PORT || '12345';
+    const port = process.env.PORT || process.env.SNYK_PORT || '12300';
     const baseApi = '/api/v1';
     env = {
       ...process.env,
@@ -58,7 +58,7 @@ describe('analytics module', () => {
 
     expect(lastRequest).toMatchObject({
       headers: {
-        host: 'localhost:12345',
+        host: 'localhost:12700',
         accept: 'application/json',
         authorization: 'token 123456789',
         'content-type': 'application/json; charset=utf-8',
@@ -132,7 +132,7 @@ describe('analytics module', () => {
     const lastRequest = requests.pop();
     expect(lastRequest).toMatchObject({
       headers: {
-        host: 'localhost:12345',
+        host: 'localhost:12710',
         accept: 'application/json',
         authorization: 'token 123456789',
         'content-type': 'application/json; charset=utf-8',
@@ -210,7 +210,7 @@ describe('analytics module', () => {
     const lastRequest = requests.pop();
     expect(lastRequest).toMatchObject({
       headers: {
-        host: 'localhost:12345',
+        host: 'localhost:12720',
         accept: 'application/json',
         authorization: 'token 123456789',
         'content-type': 'application/json; charset=utf-8',
@@ -355,7 +355,7 @@ describe('analytics module', () => {
     const lastRequest = requests.pop();
     expect(lastRequest).toMatchObject({
       headers: {
-        host: 'localhost:12345',
+        host: 'localhost:12730',
         accept: 'application/json',
         authorization: 'token 123456789',
         'content-type': 'application/json; charset=utf-8',
@@ -407,7 +407,7 @@ describe('analytics module', () => {
     const lastRequest = server.popRequest();
     expect(lastRequest).toMatchObject({
       headers: {
-        host: 'localhost:12345',
+        host: 'localhost:12740',
         'content-length': expect.any(String),
         authorization: 'token 123456789',
         'content-type': 'application/json; charset=utf-8',

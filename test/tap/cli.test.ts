@@ -25,7 +25,7 @@ type Policy = {
   [id: string]: Ignore[];
 };
 
-const port = process.env.PORT || process.env.SNYK_PORT || '12345';
+const port = process.env.PORT || process.env.SNYK_PORT || '12610';
 
 const apiKey = '123456789';
 let oldKey;
@@ -129,7 +129,7 @@ test('auth with no args', async (t) => {
     t.ok(open.calledOnce, 'called open once');
     t.match(
       open.firstCall.args[0],
-      'http://localhost:12345/login?token=',
+      'http://localhost:12610/login?token=',
       'opens login with token param',
     );
     ciStub.restore();

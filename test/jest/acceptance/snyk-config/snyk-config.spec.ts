@@ -19,7 +19,7 @@ test('returns value in one line', async () => {
 
 describe('snyk config set endpoint', () => {
   let server: FakeServer;
-  const port = process.env.PORT || process.env.SNYK_PORT || '12345';
+  const port = process.env.PORT || process.env.SNYK_PORT || '12430';
   const baseApi = '/api';
   const token = '123456789';
 

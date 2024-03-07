@@ -22,7 +22,7 @@ describe('`snyk test` of basic projects for each language/ecosystem', () => {
   let dontSkip: boolean;
 
   beforeAll((done) => {
-    const port = process.env.PORT || process.env.SNYK_PORT || '12345';
+    const port = process.env.PORT || process.env.SNYK_PORT || '12490';
     const baseApi = '/api/v1';
     env = {
       ...process.env,

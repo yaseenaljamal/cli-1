@@ -17,7 +17,7 @@ describe('snyk test with missing node_modules', () => {
       'no-vulns',
       'vulns-result.json',
     );
-    const port = process.env.PORT || process.env.SNYK_PORT || '12345';
+    const port = process.env.PORT || process.env.SNYK_PORT || '12510';
     const BASE_API = '/api/v1';
     env = {
       ...process.env,

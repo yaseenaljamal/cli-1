@@ -8,7 +8,7 @@ describe('cli token precedence', () => {
   let env: Record<string, string>;
   let initialConfig: Record<string, string> = {};
 
-  const port = process.env.PORT || process.env.SNYK_PORT || '12345';
+  const port = process.env.PORT || process.env.SNYK_PORT || '12350';
   const baseApi = '/api/v1';
   const initialEnvVars = {
     ...process.env,

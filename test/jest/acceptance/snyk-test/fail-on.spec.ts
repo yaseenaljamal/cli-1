@@ -10,7 +10,7 @@ describe('snyk test --fail-on', () => {
 
   beforeAll((done) => {
     const apiPath = '/api/v1';
-    const apiPort = process.env.PORT || process.env.SNYK_PORT || '12345';
+    const apiPort = process.env.PORT || process.env.SNYK_PORT || '12500';
     env = {
       ...process.env,
       SNYK_API: 'http://localhost:' + apiPort + apiPath,

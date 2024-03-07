@@ -5,7 +5,7 @@ jest.setTimeout(1000 * 30);
 
 describe('config', () => {
   let server: ReturnType<typeof fakeServer>;
-  const port = process.env.PORT || process.env.SNYK_PORT || '12345';
+  const port = process.env.PORT || process.env.SNYK_PORT || '12360';
   const baseURL = '/realbase';
   const orgId = '4e0828f9-d92a-4f54-b005-6b9d8150b75f';
   const testData = {

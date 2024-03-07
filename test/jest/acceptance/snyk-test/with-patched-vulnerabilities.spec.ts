@@ -9,7 +9,7 @@ describe('snyk test with patched vulnerabilities', () => {
   let env: Record<string, string>;
 
   beforeAll((done) => {
-    const port = process.env.PORT || process.env.SNYK_PORT || '12345';
+    const port = process.env.PORT || process.env.SNYK_PORT || '12570';
     const baseApi = '/api/v1';
     env = {
       ...process.env,

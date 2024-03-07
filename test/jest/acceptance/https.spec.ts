@@ -18,7 +18,7 @@ describe('https', () => {
     const ipaddress = getFirstIPv4Address();
     console.log('Using ip: ' + ipaddress);
 
-    const port = process.env.PORT || process.env.SNYK_PORT || '12345';
+    const port = process.env.PORT || process.env.SNYK_PORT || '12370';
     const baseApi = '/api/v1';
     env = {
       ...process.env,

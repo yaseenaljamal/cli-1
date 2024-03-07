@@ -5,7 +5,7 @@ import * as sinon from 'sinon';
 
 const { test } = tap;
 
-const port = (process.env.PORT = process.env.SNYK_PORT = '12345');
+const port = (process.env.PORT = process.env.SNYK_PORT = '12910');
 const BASE_API = '/api/v1';
 process.env.SNYK_API = 'http://localhost:' + port + BASE_API;
 process.env.SNYK_HOST = 'http://localhost:' + port;
