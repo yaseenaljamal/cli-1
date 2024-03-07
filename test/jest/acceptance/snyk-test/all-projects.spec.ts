@@ -1,6 +1,7 @@
 import { createProjectFromWorkspace } from '../../util/createProject';
 import { runSnykCLI } from '../../util/runSnykCLI';
 import { fakeServer } from '../../../acceptance/fake-server';
+import { pickPort } from '../../util/getPort';
 
 jest.setTimeout(1000 * 60);
 

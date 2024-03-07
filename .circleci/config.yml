@@ -1026,7 +1026,7 @@ jobs:
         default: 'echo Running tests'
       shards:
         type: integer
-        default: 2
+        default: 3
     executor: << parameters.executor >>
     parallelism: << parameters.shards >>
     steps:
