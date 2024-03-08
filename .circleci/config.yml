@@ -290,15 +290,16 @@ commands:
           name: Installing Rosetta
           command: softwareupdate --install-rosetta --agree-to-license
       - restore_cache:
-          key: acceptance-tests-macos-<< parameters.items >>
+          key: acceptance-tests-macos-with-local-<< parameters.items >>
       - run:
           name: Installing sdks and tools via homebrew
           command: |
             brew install << parameters.items >>
       - save_cache:
-          key: acceptance-tests-macos-<< parameters.items >>
+          key: acceptance-tests-macos-with-local-<< parameters.items >>
           paths:
             - ~/Library/Caches/Homebrew
+            - /usr/local/Homebrew
       - install-deps-python:
           os: macos
 
