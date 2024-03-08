@@ -82,6 +82,7 @@ export default {
     rules: [
       {
         test: /\.ts$/i,
+        include: path.resolve(__dirname, 'src'),
         loader: 'ts-loader',
       },
       {
