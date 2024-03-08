@@ -296,6 +296,7 @@ commands:
           environment:
             HOMEBREW_NO_AUTO_UPDATE: 1
           command: |
+            brew --cache
             brew install << parameters.items >>
       - save_cache:
           key: acceptance-tests-macos-with-local-<< parameters.items >>
