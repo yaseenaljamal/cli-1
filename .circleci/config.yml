@@ -295,6 +295,9 @@ commands:
           name: Installing sdks and tools via homebrew
           environment:
             HOMEBREW_NO_AUTO_UPDATE: 1
+            HOMEBREW_NO_INSTALL_CLEANUP: 1
+            HOMEBREW_NO_INSTALL_UPGRADE: 1
+            HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK: 1
           command: |
             brew --cache
             brew install << parameters.items >>
