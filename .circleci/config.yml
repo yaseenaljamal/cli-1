@@ -293,6 +293,8 @@ commands:
           key: acceptance-tests-macos-with-local-<< parameters.items >>
       - run:
           name: Installing sdks and tools via homebrew
+          environment:
+            HOMEBREW_NO_AUTO_UPDATE: 1
           command: |
             brew install << parameters.items >>
       - save_cache:
