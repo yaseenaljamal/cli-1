@@ -1000,6 +1000,7 @@ jobs:
       - persist_to_workspace:
           root: .
           paths:
+            - ts-binary-wrapper/*
             - binary-releases/snyk-*
             - binary-releases/fips/snyk-*
 
