@@ -355,7 +355,7 @@ workflows:
           context: snyk-bot-slack
           channel: cli-alerts
 
-      - prepare-build:
+      - determine-version:
           requires:
             - secrets-scan
 
@@ -369,7 +369,7 @@ workflows:
 
       - build-typescript-cli:
           requires:
-            - prepare-build
+            - determine-version
 
       - test-node:
           context:
@@ -386,7 +386,7 @@ workflows:
             - nodejs-install
             - team_hammerhead-cli
           requires:
-            - prepare-build
+            - determine-version
           filters:
             branches:
               ignore: main
@@ -404,7 +404,7 @@ workflows:
       - build-special-artifacts:
           name: build fix & protect
           requires:
-            - prepare-build
+            - determine-version
 
       - build-artifact:
           name: build linux amd64
@@ -415,7 +415,7 @@ workflows:
           make_target: build clean-golang build-fips
           executor: docker-amd64
           requires:
-            - prepare-build
+            - determine-version
 
       - build-artifact:
           name: build linux arm64
@@ -426,7 +426,7 @@ workflows:
           make_target: build clean-golang build-fips
           executor: docker-arm64
           requires:
-            - prepare-build
+            - determine-version
 
       - build-artifact:
           name: build alpine amd64
@@ -437,7 +437,7 @@ workflows:
           executor: docker-amd64
           c_compiler: /usr/bin/musl-gcc
           requires:
-            - prepare-build
+            - determine-version
 
       - build-artifact:
           name: build macOS amd64
@@ -448,7 +448,7 @@ workflows:
           executor: macos-arm64
           install_deps_extension: macos-build
           requires:
-            - prepare-build
+            - determine-version
 
       - build-artifact:
           name: build macOS arm64
@@ -459,7 +459,7 @@ workflows:
           executor: macos-arm64
           install_deps_extension: macos-build
           requires:
-            - prepare-build
+            - determine-version
 
       - build-artifact:
           name: build windows amd64
@@ -473,7 +473,7 @@ workflows:
           executor: win-server2022-amd64
           context: snyk-windows-signing
           requires:
-            - prepare-build
+            - determine-version
 
       - regression-tests:
           name: regression-tests
@@ -802,9 +802,9 @@ workflows:
 ####################################################################################################
 
 jobs:
-  prepare-build:
+  determine-version:
     docker:
-      - image: cimg/base:2024.02
+      - image: cimg/base:current
     resource_class: small
     steps:
       - checkout
