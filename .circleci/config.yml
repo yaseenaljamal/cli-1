@@ -877,6 +877,7 @@ jobs:
   build-typescript-cli:
     docker:
       - image: cimg/node:18.18.1
+    resource_class: large
     steps:
       - prepare-workspace
       - restore_cache:
