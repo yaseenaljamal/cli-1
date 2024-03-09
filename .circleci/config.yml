@@ -386,7 +386,7 @@ workflows:
             - nodejs-install
             - team_hammerhead-cli
           requires:
-            - determine-version
+            - secrets-scan
           filters:
             branches:
               ignore: main
