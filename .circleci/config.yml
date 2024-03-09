@@ -997,6 +997,7 @@ jobs:
         type: string
         default: /mnt/ramdisk/snyk/binary-files/snyk-linux
     executor: docker-amd64
+    resource_class: medium
     working_directory: /mnt/ramdisk/snyk
     steps:
       - prepare-workspace
