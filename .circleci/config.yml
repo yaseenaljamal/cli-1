@@ -1001,9 +1001,13 @@ jobs:
       - persist_to_workspace:
           root: .
           paths:
+            - binary-releases/*
+            - binary-releases/fips/*
+            - dist/*
+            - node_modules/*
+            - packages/*
             - ts-binary-wrapper/*
-            - binary-releases/snyk-*
-            - binary-releases/fips/snyk-*
+            - ts-cli-binaries/*
 
   acceptance-tests:
     parameters:
