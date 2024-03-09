@@ -802,9 +802,15 @@ jobs:
     executor: docker-amd64
     steps:
       - checkout
+      - restore_cache:
+          key: npm-deps-{{ checksum "package-lock.json" }}
       - run:
           name: Installing dependencies
           command: npm ci
+      - save_cache:
+          paths:
+            - "node_modules"
+          key: npm-deps-{{ checksum "package-lock.json" }} 
       - run:
           name: Set version
           command: |
