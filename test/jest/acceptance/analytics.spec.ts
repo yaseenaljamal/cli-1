@@ -10,14 +10,9 @@ jest.setTimeout(1000 * 30);
 describe('analytics module', () => {
   let server;
   let env: Record<string, string>;
-  let port;
+  const port = process.env.PORT || process.env.SNYK_PORT || '12345';
 
   beforeAll((done) => {
-<<<<<<< HEAD
-    const port = process.env.PORT || process.env.SNYK_PORT || '12345';
-=======
-    port = pickPort();
->>>>>>> 82fc25315 (chore(ci): increase to 3x parallel)
     const baseApi = '/api/v1';
     env = {
       ...process.env,
