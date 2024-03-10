@@ -993,8 +993,11 @@ jobs:
       - restore_cache:
           name: Restore npm cache
           keys:
-            - npm-deps-build-<< parameters.executor >>-{{ checksum "package-lock.json" }}
-            - npm-deps-build-<< parameters.executor >>
+            - build-artifacts-npm-<< parameters.executor >>-{{ checksum "package-lock.json" }}
+            - build-artifacts-npm-<< parameters.executor >>
+      - run:
+          name: Verify npm cache
+          command: npm cache verify --cache .npm
       - run:
           name: Build << parameters.go_target_os >>/<< parameters.go_arch >>
           environment:
@@ -1007,10 +1010,9 @@ jobs:
           paths: [/home/circleci/go/pkg/mod]
       - save_cache:
           name: Save npm cache
-          key: npm-deps-build-<< parameters.executor >>-{{ checksum "package-lock.json" }}
+          key: build-artifacts-npm-<< parameters.executor >>-{{ checksum "package-lock.json" }}
           paths:
-            - ~/.npm
-            - "%LocalAppData%\npm-cache"
+            - .npm
       - store_artifacts:
           path: binary-releases
       - persist_to_workspace:
