@@ -987,6 +987,10 @@ jobs:
           extraction_path: << parameters.install_path >>
       - restore_cache:
           key: go-build-{{ arch }}-{{ checksum "cliv2/go.sum" }}
+      - restore_cache:
+          keys:
+            - npm-deps-build-<< parameters.executor >>-{{ checksum "package-lock.json" }}
+            - npm-deps-build-<< parameters.executor >>
       - run:
           name: Build << parameters.go_target_os >>/<< parameters.go_arch >>
           environment:
@@ -996,6 +1000,11 @@ jobs:
       - save_cache:
           key: go-build-{{ arch }}-{{ checksum "cliv2/go.sum" }}
           paths: [/home/circleci/go/pkg/mod]
+      - save_cache:
+          key: npm-deps-build-{{ parameters.executor }}-{{ checksum "package-lock.json" }}
+          paths:
+            - ~/.npm
+            - "%LocalAppData%\npm-cache"
       - store_artifacts:
           path: binary-releases
       - persist_to_workspace:
