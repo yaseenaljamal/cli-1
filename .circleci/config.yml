@@ -867,7 +867,7 @@ jobs:
 
   test-go:
     docker:
-      - image: cimg/golang:1.20
+      - image: cimg/go:1.20
     resource_class: medium+
     steps:
       - prepare-workspace
@@ -988,8 +988,10 @@ jobs:
           base_url: << parameters.go_download_base_url >>
           extraction_path: << parameters.install_path >>
       - restore_cache:
+          name: Restore go cache
           key: go-build-{{ arch }}-{{ checksum "cliv2/go.sum" }}
       - restore_cache:
+          name: Restore npm cache
           keys:
             - npm-deps-build-<< parameters.executor >>-{{ checksum "package-lock.json" }}
             - npm-deps-build-<< parameters.executor >>
@@ -1000,10 +1002,12 @@ jobs:
             CGO_ENABLED: 1
           command: make << parameters.make_target >> GOOS=<< parameters.go_target_os >> GOARCH=<< parameters.go_arch >>
       - save_cache:
+          name: Save go cache
           key: go-build-{{ arch }}-{{ checksum "cliv2/go.sum" }}
           paths: [/home/circleci/go/pkg/mod]
       - save_cache:
-          key: npm-deps-build-{{ parameters.executor }}-{{ checksum "package-lock.json" }}
+          name: Save npm cache
+          key: npm-deps-build-<< parameters.executor >>-{{ checksum "package-lock.json" }}
           paths:
             - ~/.npm
             - "%LocalAppData%\npm-cache"
