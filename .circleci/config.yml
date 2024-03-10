@@ -866,7 +866,9 @@ jobs:
           path: test/reports
 
   test-go:
-    executor: docker-amd64
+    docker:
+      - image: cimg/golang:1.20
+    resource_class: medium+
     steps:
       - prepare-workspace
       - run:
