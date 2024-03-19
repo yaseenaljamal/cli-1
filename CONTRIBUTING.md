@@ -307,7 +307,3 @@ If you have made changes to the `go-application-framework`, you can run `python3
 - Go get that version of the framework
 
 You can then raise a pr with the relevant changes.
-
----
-
-Questions? Ask Hammerhead 🔨
