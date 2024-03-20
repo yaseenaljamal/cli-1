@@ -460,7 +460,11 @@ Use a double dash (`--`) after the complete Snyk command to pass additional opti
 
 The format is `snyk <command> -- [<context-specific_options>]`
 
-Example: `snyk test -- --build-cache`
+Examples: 
+
+`snyk test -- --build-cache` - Gradle with --build-cache enables caching of build outputs to improve subsequent build times.
+
+`snyk test -- --Dverbose` - Maven with --Dverbose includes otherwise omitted repeated transitive dependencies.
 
 **Note:** Do not use double quotes in any `-- [<context-specific_options>]`.
 

@@ -173,6 +173,17 @@ describe('`snyk test` of basic projects for each language/ecosystem', () => {
     expect(code).toEqual(0);
   });
 
+  test('run `snyk test` on a maven project with verbose', async () => {
+    const project = await createProjectFromWorkspace('maven-app');
+
+    const { code } = await runSnykCLI('test -d -- -Dverbose', {
+      cwd: project.path(),
+      env,
+    });
+
+    expect(code).toEqual(0);
+  });
+
   test('run `snyk test` on a nuget project', async () => {
     const project = await createProjectFromWorkspace('nuget-app-2');
 
