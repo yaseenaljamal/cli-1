@@ -381,6 +381,7 @@ workflows:
           name: secrets-scan
           context: snyk-bot-slack
           channel: cli-alerts
+          resource_class: medium+
 
       - prepare-build:
           requires:
