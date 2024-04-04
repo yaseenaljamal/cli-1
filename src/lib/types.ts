@@ -231,37 +231,40 @@ export interface OutputDataTypes {
 export type SupportedProjectTypes = IacProjectTypes | SupportedPackageManagers;
 
 // TODO: finish typing this there are many more!
-export type SupportedUserReachableFacingCliArgs =
-  | 'all-projects'
-  | 'all-sub-projects'
-  | 'detection-depth'
-  | 'docker'
-  | 'dry-run'
-  | 'sequential'
-  | 'fail-on'
-  | 'file'
-  | 'gradle-sub-project'
-  | 'ignore-policy'
-  | 'init-script'
-  | 'integration-name'
-  | 'integration-version'
-  | 'json'
-  | 'package-manager'
-  | 'packages-folder'
-  | 'policy'
-  | 'project-name'
-  | 'prune-repeated-subdependencies'
-  | 'rules'
-  | 'scan-all-unmanaged'
-  | 'severity-threshold'
-  | 'show-vulnerable-paths'
-  | 'skip-unresolved'
-  | 'strict-out-of-sync'
-  | 'sub-project'
-  | 'trust-policies'
-  | 'yarn-workspaces'
-  | 'maven-aggregate-project'
-  | 'gradle-normalize-deps';
+const supportedUserReachableFacingCliArgsValues = [
+  'all-projects',
+  'all-sub-projects',
+  'detection-depth',
+  'docker',
+  'dry-run',
+  'sequential',
+  'fail-on',
+  'file',
+  'gradle-sub-project',
+  'ignore-policy',
+  'init-script',
+  'integration-name',
+  'integration-version',
+  'json',
+  'package-manager',
+  'packages-folder',
+  'policy',
+  'project-name',
+  'prune-repeated-subdependencies',
+  'rules',
+  'scan-all-unmanaged',
+  'severity-threshold',
+  'show-vulnerable-paths',
+  'skip-unresolved',
+  'strict-out-of-sync',
+  'sub-project',
+  'trust-policies',
+  'yarn-workspaces',
+  'maven-aggregate-project',
+  'gradle-normalize-deps',
+];
+
+export type SupportedUserReachableFacingCliArgs = typeof supportedUserReachableFacingCliArgsValues[number];
 
 export enum SupportedCliCommands {
   version = 'version',

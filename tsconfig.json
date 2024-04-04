@@ -2,9 +2,10 @@
   "extends": "./tsconfig.settings.json",
   "compilerOptions": {
     "outDir": "./dist",
-    "rootDir": "./src"
+    "rootDir": "./src",
+    "plugins": [{"transform": "ts-transformer-keys/transformer", "transformProgram": true}]
   },
-  "include": ["./src/**/*"],
+  "include": ["./src/**/*", "scripts/cli-args-report.ts"],
   "references": [
     { "path": "packages/snyk-protect" },
     { "path": "packages/snyk-fix" }
