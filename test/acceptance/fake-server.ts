@@ -112,7 +112,6 @@ export const fakeServer = (basePath: string, snykToken: string): FakeServer => {
   };
 
   const setNextResponse = (response: string | Record<string, unknown>) => {
-    console.log(`Fake server setNextResponse: ${response}`)
     if (typeof response === 'string') {
       nextResponse = JSON.parse(response);
       return;
@@ -156,6 +155,7 @@ export const fakeServer = (basePath: string, snykToken: string): FakeServer => {
   app.use(express.json({ type: 'application/vnd.api+json', strict: false }));
   app.use((req, res, next) => {
     requests.push(req);
+    console.log(req.method, req.url, req.body);
     next();
   });
 
@@ -223,6 +223,14 @@ export const fakeServer = (basePath: string, snykToken: string): FakeServer => {
         vulnerabilities: [],
       });
     }
+  });
+
+  // Supporting new code test
+  app.get('/deeproxy/filters', (req, res) => {
+    return res.send({
+      configFiles: ["test"],
+      extensions: ["test"],
+    });
   });
 
   app.post(basePath + '/vuln/:registry', (req, res, next) => {
