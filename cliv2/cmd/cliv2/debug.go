@@ -11,7 +11,6 @@ import (
 	"github.com/rs/zerolog"
 
 	"github.com/snyk/go-application-framework/pkg/configuration"
-	"github.com/snyk/go-application-framework/pkg/logging"
 )
 
 func getDebugLevel(config configuration.Configuration, logger *zerolog.Logger) zerolog.Level {
@@ -52,7 +51,7 @@ func initDebugLogger(config configuration.Configuration) *zerolog.Logger {
 			},
 		}
 
-		scrubLogger := logging.NewScrubbingWriter(zerolog.MultiLevelWriter(consoleWriter), logging.GetScrubDictFromConfig(config))
+		scrubLogger := zerolog.MultiLevelWriter(consoleWriter)
 		localLogger := zerolog.New(scrubLogger).With().Str("ext", "main").Str("separator", "-").Timestamp().Logger()
 		loglevel := getDebugLevel(config, &localLogger)
 		debugLogger := localLogger.Level(loglevel)
