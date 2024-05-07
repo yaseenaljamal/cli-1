@@ -147,6 +147,9 @@ func (p *WrapperProxy) replaceVersionHandler(r *http.Request, ctx *goproxy.Proxy
 		p.DebugLogger.Printf("Failed to add header: %s", err)
 	}
 
+	p.DebugLogger.Printf("> request [%p]: %s %s\n", r, r.Method, r.URL.String())
+	p.DebugLogger.Printf("> request [%p]: header: %v", r, r.Header)
+
 	return r, nil
 }
 
