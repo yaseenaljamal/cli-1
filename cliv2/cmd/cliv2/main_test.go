@@ -117,9 +117,7 @@ func Test_CreateCommandsForWorkflowWithSubcommands(t *testing.T) {
 		workflowConfig := workflow.ConfigurationOptionsFromFlagset(pflag.NewFlagSet("pla", pflag.ContinueOnError))
 		workflowId1 := workflow.NewWorkflowIdentifier(v)
 		_, err := globalEngine.Register(workflowId1, workflowConfig, fn)
-		if err != nil {
-			t.Fatal(err)
-		}
+		assert.NoError(t, err)
 	}
 
 	_ = globalEngine.Init()
@@ -192,9 +190,7 @@ func Test_runMainWorkflow_unknownargs(t *testing.T) {
 				workflowConfig := workflow.ConfigurationOptionsFromFlagset(pflag.NewFlagSet("pla", pflag.ContinueOnError))
 				workflowId1 := workflow.NewWorkflowIdentifier(v)
 				_, err := globalEngine.Register(workflowId1, workflowConfig, fn)
-				if err != nil {
-					t.Fatal(err)
-				}
+				assert.NoError(t, err)
 			}
 
 			_ = globalEngine.Init()
@@ -311,9 +307,7 @@ func Test_runWorkflowAndProcessData(t *testing.T) {
 	workflowConfig := workflow.ConfigurationOptionsFromFlagset(pflag.NewFlagSet("pla", pflag.ContinueOnError))
 
 	_, err := globalEngine.Register(workflowId1, workflowConfig, outputFn)
-	if err != nil {
-		t.Fatal(err)
-	}
+	assert.NoError(t, err)
 
 	fn := func(invocation workflow.InvocationContext, input []workflow.Data) ([]workflow.Data, error) {
 		typeId := workflow.NewTypeIdentifier(invocation.GetWorkflowIdentifier(), "workflowData")
@@ -331,9 +325,7 @@ func Test_runWorkflowAndProcessData(t *testing.T) {
 
 		var d []byte
 		d, err = json.Marshal(testSummary)
-		if err != nil {
-			t.Fatal(err)
-		}
+		assert.NoError(t, err)
 
 		data := workflow.NewData(typeId, content_type.TEST_SUMMARY, d)
 		return []workflow.Data{
