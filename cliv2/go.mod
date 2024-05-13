@@ -16,7 +16,7 @@ require (
 	github.com/snyk/go-application-framework v0.0.0-20240513111557-0f09a5c36e29
 	github.com/snyk/go-httpauth v0.0.0-20240307114523-1f5ea3f55c65
 	github.com/snyk/snyk-iac-capture v0.6.5
-	github.com/snyk/snyk-ls v0.0.0-20240510163626-041f744c3180
+	github.com/snyk/snyk-ls v0.0.0-20240513084925-0e5985de1531
 	github.com/spf13/cobra v1.7.0
 	github.com/spf13/pflag v1.0.5
 	github.com/stretchr/testify v1.9.0
@@ -202,3 +202,4 @@ require (
 replace github.com/mattn/go-localereader v0.0.1 => github.com/mattn/go-localereader v0.0.2-0.20220822084749-2491eb6c1c75
 
 //replace github.com/snyk/go-application-framework => ../../go-application-framework
+replace github.com/snyk/snyk-ls => ../../snyk-ls
