@@ -14,10 +14,12 @@ import (
 	"os/exec"
 	"path"
 	"regexp"
+	"slices"
 	"strings"
 	"time"
 
 	"github.com/gofrs/flock"
+	"github.com/snyk/error-catalog-golang-public/snyk_errors"
 	"github.com/snyk/go-application-framework/pkg/configuration"
 	"github.com/snyk/go-application-framework/pkg/utils"
 
@@ -455,12 +457,25 @@ func DeriveExitCode(err error) int {
 			returnCode = constants.SNYK_EXIT_CODE_EX_UNAVAILABLE
 		} else if errors.As(err, &errorWithExitCode) {
 			returnCode = errorWithExitCode.ExitCode
+		} else if isUnsupportedProjectError(err) {
+			returnCode = constants.SNYK_EXIT_CODE_UNSUPPORTED_PROJECTS
 		} else {
 			// got an error but it's not an ExitError
 			returnCode = constants.SNYK_EXIT_CODE_ERROR
 		}
 	}
 	return returnCode
+}
+
+func isUnsupportedProjectError(err error) bool {
+	var catalogError = snyk_errors.Error{}
+
+	if !errors.As(err, &catalogError) {
+		return false
+	}
+
+	unsupportedProjectErrorCodes := []string{"Snyk-CLI-0002"}
+	return slices.Contains(unsupportedProjectErrorCodes, catalogError.ErrorCode)
 }
 
 func (e EnvironmentWarning) Error() string {

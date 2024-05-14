@@ -14,6 +14,7 @@ import (
 	"time"
 
 	cli_errors "github.com/snyk/cli/cliv2/internal/errors"
+	"github.com/snyk/error-catalog-golang-public/snyk_errors"
 	"github.com/snyk/go-application-framework/pkg/configuration"
 
 	"github.com/snyk/cli/cliv2/internal/cliv2"
@@ -497,6 +498,26 @@ func TestDeriveExitCode(t *testing.T) {
 		{name: "error with exit code", err: &cli_errors.ErrorWithExitCode{ExitCode: 42}, expected: 42},
 		{name: "context.DeadlineExceeded", err: context.DeadlineExceeded, expected: constants.SNYK_EXIT_CODE_EX_UNAVAILABLE},
 		{name: "other error", err: errors.New("some other error"), expected: constants.SNYK_EXIT_CODE_ERROR},
+		{name: "snyk code – misc catalog error", err: snyk_errors.Error{
+			ErrorCode:      "Snyk-CLI-0003",
+			Title:          "No Supported Projects Detected",
+			Classification: "ACTIONABLE",
+			Level:          "warning",
+			Detail:         "We found 0 supported files\nPlease see our documentation for Snyk Code language and framework support\n",
+			Links: []string{
+				"https://docs.snyk.io/products/snyk-code/snyk-code-language-and-framework-support",
+			},
+		}, expected: constants.SNYK_EXIT_CODE_ERROR},
+		{name: "snyk code – unsupported projects", err: snyk_errors.Error{
+			ErrorCode:      "Snyk-CLI-0002",
+			Title:          "No Supported Projects Detected",
+			Classification: "ACTIONABLE",
+			Level:          "warning",
+			Detail:         "We found 0 supported files\nPlease see our documentation for Snyk Code language and framework support\n",
+			Links: []string{
+				"https://docs.snyk.io/products/snyk-code/snyk-code-language-and-framework-support",
+			},
+		}, expected: constants.SNYK_EXIT_CODE_UNSUPPORTED_PROJECTS},
 	}
 
 	for _, tc := range tests {
